@@ -1,0 +1,823 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Arduino do Zero</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Conceito: apostila de bancada. Fundo frio de papel técnico, código sempre em painel escuro, amarelo-sinal só para o que pede ação (número do projeto, quantidades, dicas). */
+:root{
+  --bg:#EDF2F0; --surface:#FFFFFF; --ink:#0E2420; --muted:#4A625C; --line:#CFDBD7;
+  --accent:#FFC21A; --accent-ink:#2A2000; --green:#0E7C5E; --green-bg:#DDF3EA;
+  --warn:#B4381C; --warn-bg:#FBE6DF; --tip-bg:#FFF1C2; --inline-bg:#E3ECE9;
+  --code-bg:#0F1F1C; --code-ink:#E4F0EB; --code-dim:#7E9A92; --c-kw:#FFC21A; --c-fn:#6FE0B4; --c-num:#8DB8FF; --c-str:#F4A38B;
+  --pcb:#0F7A62; --board:#DCE6E2; --hole:#8FA59F;
+  --w-gnd:#1B2B28; --w-5v:#E5484D; --w1:#E8791A; --w2:#2F7DE1; --w3:#19A974; --w4:#8E5BD9; --w5:#C99A00; --w6:#12A5B8;
+  --f-display:'Bricolage Grotesque','Trebuchet MS',sans-serif;
+  --f-body:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1714; --surface:#12231F; --ink:#E5F0EC; --muted:#9BB3AC; --line:#254039;
+    --green:#3DDC97; --green-bg:#123428; --warn:#FF8F73; --warn-bg:#3A1D16; --tip-bg:#3A3110; --inline-bg:#1B332D;
+    --code-bg:#07110F; --pcb:#0B5A49; --board:#1B332D; --hole:#4A685F;
+    --w-gnd:#A9BDB7; --w1:#F5993F; --w2:#5B9BF0; --w3:#3DD29A; --w4:#A883EE; --w5:#E0B520; --w6:#3CC3D3;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1714; --surface:#12231F; --ink:#E5F0EC; --muted:#9BB3AC; --line:#254039;
+  --green:#3DDC97; --green-bg:#123428; --warn:#FF8F73; --warn-bg:#3A1D16; --tip-bg:#3A3110; --inline-bg:#1B332D;
+  --code-bg:#07110F; --pcb:#0B5A49; --board:#1B332D; --hole:#4A685F;
+  --w-gnd:#A9BDB7; --w1:#F5993F; --w2:#5B9BF0; --w3:#3DD29A; --w4:#A883EE; --w5:#E0B520; --w6:#3CC3D3;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:17px/1.62 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 72px;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:800px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.12}
+h1{font-size:clamp(46px,11vw,84px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(28px,6vw,40px);font-weight:800;letter-spacing:-.01em}
+h3{font-size:21px;font-weight:600;margin-top:30px;margin-bottom:12px}
+h4{font-size:17px;font-weight:600}
+p{margin:0 0 12px;max-width:65ch}
+a{color:var(--green)}
+b{font-weight:700}
+section{padding-block:44px 8px;border-top:1px solid var(--line);scroll-margin-top:64px}
+.eyebrow{font:600 12px/1.2 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.lead{font-size:19px;color:var(--ink);max-width:56ch}
+.ic,code{font-family:var(--f-mono);font-size:.88em;background:var(--inline-bg);padding:1px 6px;border-radius:5px}
+
+/* barra de capítulos */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px))) calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:9px 0;max-width:800px;margin:0 auto;scrollbar-width:thin}
+.nav a{flex:none;text-decoration:none;color:var(--ink);font:600 14px/1 var(--f-body);padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.nav a:hover,.nav a:focus-visible{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);outline:none}
+
+/* capa */
+.hero{padding-block:44px 36px}
+.hero h1{margin:6px 0 18px}
+.trace{width:100%;max-width:520px;height:auto;display:block;margin:6px 0 22px}
+.idx{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:10px;margin-top:26px}
+.idx a{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.idx a:hover,.idx a:focus-visible{border-color:var(--ink);outline:none}
+.idx .n{grid-row:span 2;font:800 22px var(--f-display);width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.idx .t{font:600 16px/1.2 var(--f-body)}
+.idx .d{font:400 13px/1.2 var(--f-mono);color:var(--muted);letter-spacing:.08em}
+
+/* blocos de apoio */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-block:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h4{margin-bottom:6px}
+.card p{margin:0;font-size:16px}
+.note{border-radius:10px;padding:12px 14px;margin-block:14px;font-size:16px;max-width:68ch}
+.note>b:first-child{display:block;font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.dica{background:var(--tip-bg)}
+.aviso{background:var(--warn-bg)}.aviso>b:first-child{color:var(--warn)}
+.certo{background:var(--green-bg)}.certo>b:first-child{color:var(--green)}
+.note p:last-child{margin-bottom:0}
+
+/* figuras */
+figure{margin:16px 0}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.fig svg{width:100%;height:auto;display:block}
+figcaption{font-size:14.5px;color:var(--muted);margin-top:8px;max-width:68ch}
+.svt{font:600 11px var(--f-mono);fill:var(--ink)}
+.svb{font:700 12.5px var(--f-body);fill:var(--ink)}
+.svm{font:400 10.5px var(--f-mono);fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin-top:8px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* peças */
+.kit{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:10px;padding:0;list-style:none;margin:14px 0}
+.kit li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px;min-width:0}
+.kit .nm{display:flex;gap:8px;align-items:baseline;font-weight:700}
+.kit .q{font:700 12.5px var(--f-mono);background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 7px;flex:none}
+.kit .u{font-size:15px;color:var(--muted);line-height:1.45}
+.kit .p{font:400 12.5px var(--f-mono);color:var(--green)}
+
+/* projetos */
+.ph{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;margin-bottom:14px}
+.num{width:64px;height:64px;border-radius:16px;background:var(--accent);color:var(--accent-ink);font:800 32px var(--f-display);display:grid;place-items:center}
+.ph .eyebrow{margin:0 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:14.5px}
+.chip .dots{font-family:var(--f-mono);letter-spacing:2px;color:var(--green)}
+.pecas{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.pecas li{display:flex;gap:10px;align-items:baseline;font-size:16px}
+.pecas .q{font:700 13px var(--f-mono);background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 7px;flex:none}
+.passos{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.passos label{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;min-width:0}
+.passos input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--green)}
+.passos input:checked+span{opacity:.55}
+.passos span{min-width:0}
+
+/* código */
+.chunk{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;margin-bottom:12px;align-items:start}
+.code{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:14px 16px;font:400 13.5px/1.65 var(--f-mono);overflow-x:auto;margin:0;white-space:pre;tab-size:2}
+.code i{font-style:normal}
+.cm{color:var(--code-dim)}.kw{color:var(--c-kw)}.fn{color:var(--c-fn)}.nu{color:var(--c-num)}.st{color:var(--c-str)}
+.trad{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:16px;line-height:1.55;min-width:0}
+.trad .lb{display:block;font:600 11.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+.trad p{margin:0 0 8px}.trad p:last-child{margin:0}
+details.full{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:6px}
+details.full summary{cursor:pointer;padding:12px 14px;font-weight:700}
+details.full .in{padding:0 14px 14px;display:grid;gap:10px}
+.btn{font:700 15px var(--f-body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;cursor:pointer;justify-self:start}
+.btn:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.m{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
+.err{display:grid;gap:8px}
+.err details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.err summary{cursor:pointer;padding:11px 14px;font-weight:700}
+.err details p{padding:0 14px 12px;margin:0}
+.desafio{background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:16px 18px;margin-top:26px}
+.desafio b{display:block;font:600 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.desafio p{margin:0;font-size:17px}
+.gl{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.gl div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.gl dt{font-weight:700}.gl dd{margin:2px 0 0;font-size:15.5px;color:var(--muted)}
+.gl dl,.gl dl div{margin:0}
+footer{padding-block:36px 0;border-top:1px solid var(--line);color:var(--muted);font-size:15px;margin-top:40px}
+
+@media (max-width:640px){
+  .chunk{grid-template-columns:minmax(0,1fr)}
+  body{font-size:16.5px}
+  .num{width:54px;height:54px;font-size:27px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<header class="top"><nav class="nav" id="nav" aria-label="Capítulos"></nav></header>
+
+<main class="wrap">
+
+<div class="hero" id="topo">
+  <div class="eyebrow">Kit Iniciante V8 · BlackBoard UNO R3</div>
+  <h1>Arduino do Zero</h1>
+  <svg class="trace" viewBox="0 0 520 60" role="img" aria-label="Um fio ligando um resistor a um LED aceso">
+    <path d="M4 30 H120 l10 -20 l16 40 l16 -40 l16 40 l16 -40 l10 20 H330" fill="none" style="stroke:var(--ink)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="372" cy="30" r="30" style="fill:var(--accent)" opacity=".28"/>
+    <circle cx="372" cy="30" r="17" style="fill:var(--accent)"/>
+    <path d="M330 30 H355 M389 30 H516" fill="none" style="stroke:var(--ink)" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+  <p class="lead">Um guia ilustrado para montar os 8 projetos do seu kit sem saber nada de eletrônica ou programação. Cada código vem em pedacinhos, com a tradução ao lado.</p>
+  <div class="idx" id="idx"></div>
+</div>
+
+<section id="como-usar">
+  <div class="eyebrow">Antes de tudo</div>
+  <h2>Como usar esta apostila</h2>
+  <div class="grid2">
+    <div class="card"><h4>Monte com a placa desligada</h4><p>Tire o cabo USB antes de mexer em fios. Só conecte de novo quando conferir tudo.</p></div>
+    <div class="card"><h4>Leia a tradução do código</h4><p>Você pode copiar o código completo, mas o aprendizado está nos pedacinhos explicados em português.</p></div>
+    <div class="card"><h4>Marque cada passo</h4><p>Os passos de montagem têm caixinhas. Elas ficam marcadas neste navegador, então dá para parar e voltar depois.</p></div>
+  </div>
+  <div class="note dica"><b>Sobre os esquemas</b><p>Os desenhos desta apostila foram feitos para ela, com as peças do seu kit. Se o manual online da Robocore mostrar uma ligação diferente para a sua versão da placa, siga o manual e use esta apostila para entender o porquê de cada passo.</p></div>
+</section>
+
+<section id="kit">
+  <div class="eyebrow">Capítulo 1</div>
+  <h2>Conheça as peças do kit</h2>
+  <p>Abra a caixa e separe as peças como na lista abaixo. Cada cartão diz o que a peça faz e em quais projetos ela entra.</p>
+  <ul class="kit" id="kitlist"></ul>
+</section>
+
+<section id="conceitos">
+  <div class="eyebrow">Capítulo 2</div>
+  <h2>Quatro ideias que explicam quase tudo</h2>
+  <p>Eletrônica parece complicada, mas funciona como água em canos. Entenda estas ideias e o resto vira montagem.</p>
+  <div class="grid2">
+    <div class="card"><h4>1. Circuito é um caminho fechado</h4><p>A energia sai do lado positivo (<b>5V</b>), passa pelas peças e volta pelo lado negativo (<b>GND</b>). Se o caminho tiver um buraco, nada acontece.</p></div>
+    <div class="card"><h4>2. O Arduino liga e desliga pinos</h4><p>Cada pino numerado pode virar um interruptor controlado pelo seu programa: <b>HIGH</b> é ligado (5V) e <b>LOW</b> é desligado (0V).</p></div>
+    <div class="card"><h4>3. Digital ou analógico</h4><p>Digital só conhece dois valores: ligado e desligado. Analógico mede ou entrega valores no meio do caminho, como o giro de um botão.</p></div>
+    <div class="card"><h4>4. PWM: ligar e desligar bem rápido</h4><p>Para dar meio brilho a um LED, o Arduino liga e desliga milhares de vezes por segundo. Só os pinos marcados com <b>~</b> fazem isso.</p></div>
+  </div>
+
+  <h3>A placa e os seus pinos</h3>
+  <figure><div class="fig" data-fig="placa"></div>
+  <figcaption>Vista de cima da BlackBoard UNO R3, com o conector USB à esquerda. Os pinos digitais ficam em cima, e a energia e os pinos analógicos embaixo.</figcaption></figure>
+
+  <h3>A protoboard</h3>
+  <p>É um tabuleiro de furos onde você encaixa peças sem solda. Por baixo, fios de metal ligam alguns furos entre si. Saber quais é o segredo.</p>
+  <figure><div class="fig" data-fig="proto"></div>
+  <div class="legend"><span><i style="background:var(--accent)"></i>5 furos ligados entre si (a até e)</span><span><i style="background:var(--green)"></i>outros 5 ligados entre si (f até j)</span><span><i style="background:var(--w-5v)"></i>trilho inteiro ligado</span></div>
+  <figcaption>Cada número é uma coluna: os furos de <b>a</b> até <b>e</b> são ligados entre si, e os de <b>f</b> até <b>j</b> também. O vão do meio separa os dois lados. Os trilhos das bordas (+ e −) correm de ponta a ponta.</figcaption></figure>
+
+  <div class="note certo"><b>Preparação padrão</b><p>Em todos os projetos, comece assim: ligue um jumper do pino <b>GND</b> da placa ao trilho <b>−</b> da protoboard e outro do pino <b>5V</b> ao trilho <b>+</b>. Depois, quando um passo disser "ligue no GND" ou "no 5V", basta ir ao trilho.</p></div>
+
+  <h3>O LED tem lado certo</h3>
+  <figure><div class="fig" data-fig="led"></div>
+  <figcaption>A perna mais comprida é o <b>positivo (+)</b> e vai para o lado do pino. A curta é o <b>negativo (−)</b> e vai para o GND. Ao contrário, o LED não acende (e não estraga).</figcaption></figure>
+  <p>Todo LED precisa de um <b>resistor</b> no caminho. Sem ele, passa corrente demais e o LED queima. Pense no resistor como um registro que aperta o cano.</p>
+
+  <h3>Resistores: como não confundir</h3>
+  <figure><div class="fig" data-fig="resistor"></div>
+  <figcaption>O kit tem dois tipos parecidos. O de <b>300Ω</b> (laranja, preto, marrom) protege os LEDs. O de <b>10kΩ</b> (marrom, preto, laranja) é usado nos sensores de luz. Trocar um pelo outro é o erro mais comum.</figcaption></figure>
+</section>
+
+<section id="instalar">
+  <div class="eyebrow">Capítulo 3</div>
+  <h2>Instalação e primeiro teste</h2>
+  <ol class="passos" id="passos-instalar"></ol>
+  <div class="note dica"><b>Se a porta não aparecer</b><p>Tente outro cabo (alguns só carregam, não passam dados) e outra porta USB do computador. Se ainda assim não aparecer, procure o driver da BlackBoard na página de tutoriais da Robocore.</p></div>
+  <h3>Seu primeiro programa: piscar o LED da placa</h3>
+  <p>A placa tem um LED pequeno ligado ao pino 13. Não precisa montar nada: é só enviar o programa.</p>
+  <div id="blink"></div>
+  <div class="note certo"><b>Deu certo se</b><p>o LED pequeno marcado com <b>L</b> na placa piscar a cada segundo. Parabéns, você acabou de programar um Arduino.</p></div>
+</section>
+
+<section id="comandos">
+  <div class="eyebrow">Capítulo 4</div>
+  <h2>Como ler código</h2>
+  <p>Código é uma lista de ordens, lida de cima para baixo. Estas cinco regras evitam quase todos os erros de digitação.</p>
+  <div class="grid2">
+    <div class="card"><h4>Termine com ponto e vírgula</h4><p>Cada ordem acaba em <code>;</code>. É como o ponto final de uma frase.</p></div>
+    <div class="card"><h4>Chaves abrem e fecham</h4><p>Tudo entre <code>{</code> e <code>}</code> pertence a um mesmo bloco. Se abrir, precisa fechar.</p></div>
+    <div class="card"><h4>Maiúscula faz diferença</h4><p><code>digitalWrite</code> funciona, <code>digitalwrite</code> não. Copie com cuidado.</p></div>
+    <div class="card"><h4>// é comentário</h4><p>Tudo depois de <code>//</code> na linha é ignorado. Serve para você anotar o que cada linha faz.</p></div>
+    <div class="card"><h4>setup roda uma vez</h4><p>É a arrumação inicial, feita quando a placa liga. Depois dela, <code>loop</code> repete para sempre.</p></div>
+  </div>
+  <h3>Cola dos comandos que você vai usar</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Comando</th><th>Em português</th></tr></thead>
+    <tbody>
+      <tr><td class="m">pinMode(8, OUTPUT)</td><td>O pino 8 vai <b>enviar</b> energia (acender algo).</td></tr>
+      <tr><td class="m">pinMode(2, INPUT_PULLUP)</td><td>O pino 2 vai <b>escutar</b> um botão.</td></tr>
+      <tr><td class="m">digitalWrite(8, HIGH)</td><td>Liga o pino 8. Com <code>LOW</code>, desliga.</td></tr>
+      <tr><td class="m">digitalRead(2)</td><td>Pergunta se há sinal no pino 2. A resposta é <code>HIGH</code> ou <code>LOW</code>.</td></tr>
+      <tr><td class="m">analogRead(A0)</td><td>Mede um valor de <b>0 a 1023</b> no pino A0.</td></tr>
+      <tr><td class="m">analogWrite(9, 128)</td><td>Dá "meia força" ao pino 9. Vai de 0 a 255 e só vale nos pinos com ~.</td></tr>
+      <tr><td class="m">delay(1000)</td><td>Espera 1000 milissegundos (1 segundo).</td></tr>
+      <tr><td class="m">tone(8, 440)</td><td>Toca uma nota de 440 Hz no buzzer do pino 8. <code>noTone(8)</code> silencia.</td></tr>
+      <tr><td class="m">Serial.println(valor)</td><td>Escreve o valor na tela do computador (Monitor Serial).</td></tr>
+      <tr><td class="m">map(v, 0, 1023, 0, 255)</td><td>Converte uma escala em outra, como trocar reais por centavos.</td></tr>
+      <tr><td class="m">if (...) { } else { }</td><td>Se a condição for verdadeira, faz isto. Senão, faz aquilo.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<div id="projetos"></div>
+
+<section id="problemas">
+  <div class="eyebrow">Quando algo dá errado</div>
+  <h2>Deu errado? Veja aqui</h2>
+  <div class="err" id="err"></div>
+</section>
+
+<section id="glossario">
+  <div class="eyebrow">Para consultar</div>
+  <h2>Mini glossário</h2>
+  <div class="gl" id="gl"></div>
+</section>
+
+<footer>Feito para o Kit Iniciante V8 da Robocore. Kit e marcas pertencem aos seus fabricantes. Em caso de dúvida sobre uma peça específica, vale o manual que acompanha a sua caixa.</footer>
+</main>
+
+<script>
+/* ---------- utilidades ---------- */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hl(code){
+  var re=/(\/\/[^\n]*)|(#include\s*&lt;[^&]*&gt;)|("[^"\n]*")|\b(void|int|long|float|bool|byte|const|if|else|for|while|return|true|false|HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN|Servo)\b|\b(\d+\.?\d*)\b|\b([A-Za-z_]\w*)(?=\()/g;
+  return esc(code).replace(re,function(m,c,inc,s,kw,num,fn){
+    if(c) return '<i class="cm">'+m+'</i>';
+    if(inc||kw) return '<i class="kw">'+m+'</i>';
+    if(s) return '<i class="st">'+m+'</i>';
+    if(num) return '<i class="nu">'+m+'</i>';
+    return '<i class="fn">'+m+'</i>';
+  });
+}
+function ls(k){try{return localStorage.getItem(k)==='1'}catch(e){return false}}
+function ss(k,v){try{localStorage.setItem(k,v?'1':'0')}catch(e){}}
+
+/* ---------- diagrama de ligações ---------- */
+function wiring(cfg){
+  var X1=92,X2=268,W=440,y=12,bl=[],ts=[];
+  cfg.blocks.forEach(function(b){
+    var h=30+b.terms.length*28+6;
+    bl.push({b:b,y:y,h:h});
+    b.terms.forEach(function(t,i){ts.push({t:t,y:y+30+i*28+12})});
+    y+=h+10;
+  });
+  var H=y+2, map={};
+  ts.forEach(function(o){(map[o.t.from]=map[o.t.from]||[]).push(o)});
+  var pins=Object.keys(map).map(function(k){var a=map[k];return {k:k,y:Math.max(58,a.reduce(function(s,o){return s+o.y},0)/a.length)}}).sort(function(a,b){return a.y-b.y});
+  for(var i=1;i<pins.length;i++){ if(pins[i].y<pins[i-1].y+28) pins[i].y=pins[i-1].y+28; }
+  H=Math.max(H,pins[pins.length-1].y+30);
+  var cols=['--w1','--w2','--w3','--w4','--w5','--w6'],ci=0,col={};
+  pins.forEach(function(p){col[p.k]=p.k==='GND'?'--w-gnd':(p.k==='5V'?'--w-5v':cols[ci++%6])});
+  var py={};pins.forEach(function(p){py[p.k]=p.y});
+  var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Esquema de ligação">';
+  s+='<rect x="6" y="6" width="86" height="'+(H-12)+'" rx="10" style="fill:var(--pcb)"/>';
+  var lt=(cfg.left||'BlackBoard|UNO R3').split('|');
+  lt.forEach(function(l,i){s+='<text x="49" y="'+(24+i*13)+'" text-anchor="middle" class="svt" style="fill:#fff">'+l+'</text>'});
+  ts.forEach(function(o){
+    var p=py[o.t.from],c='var('+col[o.t.from]+')';
+    s+='<path d="M'+X1+','+p+' C180,'+p+' 180,'+o.y+' '+X2+','+o.y+'" fill="none" stroke="'+c+'" stroke-width="3.2" stroke-linecap="round"/>';
+  });
+  ts.forEach(function(o){
+    if(o.t.via){
+      var cy=(py[o.t.from]+o.y)/2,c='var('+col[o.t.from]+')';
+      s+='<rect x="158" y="'+(cy-8)+'" width="44" height="16" rx="8" style="fill:var(--surface)" stroke="'+c+'" stroke-width="1.6"/>';
+      s+='<text x="180" y="'+(cy+3.6)+'" text-anchor="middle" class="svt" style="font-size:10px">'+o.t.via+'</text>';
+    }
+  });
+  pins.forEach(function(p){
+    s+='<circle cx="'+X1+'" cy="'+p.y+'" r="5" style="fill:var('+col[p.k]+');stroke:#fff" stroke-width="1.5"/>';
+    s+='<text x="83" y="'+(p.y+4)+'" text-anchor="end" class="svt" style="fill:#fff">'+p.k+'</text>';
+  });
+  bl.forEach(function(o){
+    s+='<rect x="'+X2+'" y="'+o.y+'" width="166" height="'+o.h+'" rx="10" style="fill:var(--surface);stroke:var(--line)" stroke-width="1.5"/>';
+    s+='<text x="'+(X2+14)+'" y="'+(o.y+20)+'" class="svb">'+o.b.name+'</text>';
+  });
+  ts.forEach(function(o){
+    s+='<circle cx="'+X2+'" cy="'+o.y+'" r="5" style="fill:var('+col[o.t.from]+');stroke:var(--surface)" stroke-width="1.5"/>';
+    s+='<text x="'+(X2+14)+'" y="'+(o.y+4)+'" class="svt" style="font-weight:400">'+o.t.label+'</text>';
+  });
+  return s+'</svg>';
+}
+
+/* ---------- desenhos explicativos ---------- */
+function figPlaca(){
+  var s='<svg viewBox="0 0 440 214" role="img" aria-label="Mapa da placa Arduino UNO">';
+  s+='<rect x="2" y="64" width="54" height="74" rx="4" style="fill:var(--hole)"/><text x="29" y="105" text-anchor="middle" class="svt" style="fill:#fff">USB</text>';
+  s+='<rect x="40" y="40" width="396" height="130" rx="12" style="fill:var(--pcb)"/>';
+  var top=[13,12,11,10,9,8,7,6,5,4,3,2,1,0],pwm={11:1,10:1,9:1,6:1,5:1,3:1};
+  top.forEach(function(n,i){
+    var x=n>=8?112+i*20:112+i*20+16;
+    s+='<rect x="'+(x-6)+'" y="46" width="12" height="12" rx="2" style="fill:#0A3A30"/>';
+    s+='<text x="'+x+'" y="76" text-anchor="middle" class="svt" style="fill:'+(pwm[n]?'var(--accent)':'#fff')+';font-size:10px">'+(pwm[n]?'~':'')+n+'</text>';
+  });
+  s+='<text x="112" y="36" class="svm">pinos digitais (D0 a D13). Os com ~ aceitam PWM</text>';
+  var pw=['RST','3V3','5V','GND','GND','VIN'];
+  pw.forEach(function(n,i){
+    var x=112+i*20,hot=n==='5V'?'var(--w-5v)':(n==='GND'?'#fff':'#fff');
+    s+='<rect x="'+(x-6)+'" y="152" width="12" height="12" rx="2" style="fill:#0A3A30"/>';
+    s+='<text x="'+x+'" y="140" text-anchor="middle" class="svt" style="fill:'+(n==='5V'?'#FF8B8E':'#fff')+';font-size:9.5px">'+n+'</text>';
+  });
+  for(var a=0;a<6;a++){
+    var x=268+a*20;
+    s+='<rect x="'+(x-6)+'" y="152" width="12" height="12" rx="2" style="fill:#0A3A30"/>';
+    s+='<text x="'+x+'" y="140" text-anchor="middle" class="svt" style="fill:#fff;font-size:10px">A'+a+'</text>';
+  }
+  s+='<text x="112" y="192" class="svm">energia: 5V e GND</text><text x="268" y="192" class="svm">entradas analógicas</text>';
+  return s+'</svg>';
+}
+function figProto(){
+  var cx=function(i){return 50+i*30},s='<svg viewBox="0 0 440 270" role="img" aria-label="Protoboard com furos ligados destacados">';
+  s+='<rect x="4" y="4" width="432" height="262" rx="12" style="fill:var(--board);stroke:var(--line)"/>';
+  s+='<rect x="26" y="9" width="392" height="18" rx="9" style="fill:var(--w-5v)" opacity=".28"/>';
+  s+='<rect x="'+(cx(4)-10)+'" y="52" width="20" height="82" rx="10" style="fill:var(--accent)" opacity=".6"/>';
+  s+='<rect x="'+(cx(8)-10)+'" y="144" width="20" height="82" rx="10" style="fill:var(--green)" opacity=".4"/>';
+  var rails=[[18,'+','--w-5v'],[34,'−','--w-gnd'],[240,'+','--w-5v'],[256,'−','--w-gnd']];
+  rails.forEach(function(r){
+    s+='<text x="14" y="'+(r[0]+4)+'" class="svt" style="fill:var('+r[2]+')">'+r[1]+'</text>';
+    for(var k=0;k<21;k++) s+='<circle cx="'+(34+k*18)+'" cy="'+r[0]+'" r="3.2" style="fill:var(--hole)"/>';
+  });
+  var L1=['a','b','c','d','e'],L2=['f','g','h','i','j'];
+  for(var c=0;c<12;c++){
+    s+='<text x="'+cx(c)+'" y="48" text-anchor="middle" class="svm">'+(c+1)+'</text>';
+    for(var r=0;r<5;r++){
+      s+='<circle cx="'+cx(c)+'" cy="'+(60+r*16)+'" r="3.2" style="fill:var(--hole)"/>';
+      s+='<circle cx="'+cx(c)+'" cy="'+(152+r*16)+'" r="3.2" style="fill:var(--hole)"/>';
+    }
+  }
+  for(var r2=0;r2<5;r2++){
+    s+='<text x="20" y="'+(64+r2*16)+'" text-anchor="middle" class="svm">'+L1[r2]+'</text>';
+    s+='<text x="20" y="'+(156+r2*16)+'" text-anchor="middle" class="svm">'+L2[r2]+'</text>';
+  }
+  s+='<text x="220" y="141" text-anchor="middle" class="svm">vão central: não conecta</text>';
+  return s+'</svg>';
+}
+function figLed(){
+  return '<svg viewBox="0 0 440 200" role="img" aria-label="LED com a perna longa positiva e a curta negativa">'+
+  '<path d="M170 112 V62 A50 50 0 0 1 270 62 V112 Z" style="fill:var(--accent)" opacity=".85"/>'+
+  '<rect x="160" y="112" width="120" height="9" rx="3" style="fill:var(--accent)"/>'+
+  '<path d="M170 62 V112" style="stroke:var(--ink)" stroke-width="3"/>'+
+  '<line x1="190" y1="121" x2="190" y2="160" style="stroke:var(--ink)" stroke-width="4" stroke-linecap="round"/>'+
+  '<line x1="250" y1="121" x2="250" y2="190" style="stroke:var(--ink)" stroke-width="4" stroke-linecap="round"/>'+
+  '<text x="180" y="156" text-anchor="end" class="svb">perna curta</text><text x="180" y="172" text-anchor="end" class="svt" style="fill:var(--w-gnd)">negativo (−) · GND</text>'+
+  '<text x="260" y="186" class="svb">perna longa</text><text x="260" y="171" class="svt" style="fill:var(--w-5v)">positivo (+) · pino</text>'+
+  '<text x="150" y="86" text-anchor="end" class="svt">lado achatado</text>'+
+  '<path d="M154 84 L166 84" style="stroke:var(--ink)" stroke-width="2"/>'+
+  '</svg>';
+}
+function figResistor(){
+  function res(y,bands,label,sub){
+    var s='<line x1="40" x2="400" y1="'+(y+16)+'" y2="'+(y+16)+'" style="stroke:var(--muted)" stroke-width="4" stroke-linecap="round"/>';
+    s+='<rect x="110" y="'+y+'" width="220" height="32" rx="15" fill="#D9B98A" stroke="#8A6D3B" stroke-width="1.5"/>';
+    bands.forEach(function(b,i){s+='<rect x="'+(146+i*36)+'" y="'+y+'" width="13" height="32" fill="'+b[0]+'"/>'});
+    s+='<text x="40" y="'+(y-8)+'" class="svb">'+label+'</text>';
+    s+='<text x="400" y="'+(y-8)+'" text-anchor="end" class="svm">'+sub+'</text>';
+    return s;
+  }
+  return '<svg viewBox="0 0 440 150" role="img" aria-label="Faixas de cor dos resistores de 300 ohms e 10 mil ohms">'+
+  res(26,[['#F2822C'],['#111111'],['#7A4A21'],['#C9A227']],'300Ω · protege LEDs','laranja · preto · marrom')+
+  res(98,[['#7A4A21'],['#111111'],['#F2822C'],['#C9A227']],'10kΩ · sensores','marrom · preto · laranja')+
+  '</svg>';
+}
+function figIC(){
+  var L=['1 B','2 C','3 LT','4 BI','5 LE','6 D','7 A','8 GND'],R=['16 5V','15 f','14 g','13 a','12 b','11 c','10 d','9 e'];
+  var s='<svg viewBox="0 0 440 232" role="img" aria-label="Pinos do circuito integrado 4511 visto de cima">';
+  s+='<rect x="150" y="14" width="140" height="204" rx="8" style="fill:var(--code-bg)"/>';
+  s+='<path d="M200 14 A20 20 0 0 0 240 14 Z" style="fill:var(--bg)"/>';
+  s+='<text x="220" y="124" text-anchor="middle" class="svt" style="fill:#fff">CD4511</text>';
+  for(var i=0;i<8;i++){
+    var y=36+i*24;
+    s+='<rect x="132" y="'+(y-5)+'" width="18" height="10" rx="2" style="fill:var(--hole)"/><rect x="290" y="'+(y-5)+'" width="18" height="10" rx="2" style="fill:var(--hole)"/>';
+    s+='<text x="124" y="'+(y+4)+'" text-anchor="end" class="svt">'+L[i]+'</text><text x="316" y="'+(y+4)+'" class="svt">'+R[i]+'</text>';
+  }
+  s+='<text x="220" y="9" text-anchor="middle" class="svm">entalhe para cima</text>';
+  return s+'</svg>';
+}
+function figDisplay(){
+  var top=['10 g','9 f','8 com','7 a','6 b'],bot=['1 e','2 d','3 com','4 c','5 ponto'];
+  var s='<svg viewBox="0 0 440 150" role="img" aria-label="Pinos do display de 7 segmentos visto de frente">';
+  s+='<rect x="90" y="34" width="260" height="84" rx="10" style="fill:var(--code-bg)"/>';
+  s+='<text x="220" y="94" text-anchor="middle" style="font:800 56px var(--f-mono);fill:var(--c-fn)">8.</text>';
+  for(var i=0;i<5;i++){
+    var x=118+i*51;
+    s+='<rect x="'+(x-5)+'" y="20" width="10" height="14" rx="2" style="fill:var(--hole)"/><rect x="'+(x-5)+'" y="118" width="10" height="14" rx="2" style="fill:var(--hole)"/>';
+    s+='<text x="'+x+'" y="14" text-anchor="middle" class="svt" style="font-size:10px">'+top[i]+'</text><text x="'+x+'" y="146" text-anchor="middle" class="svt" style="font-size:10px">'+bot[i]+'</text>';
+  }
+  return s+'</svg>';
+}
+var FIGS={placa:figPlaca,proto:figProto,led:figLed,resistor:figResistor};
+
+/* ---------- dados do kit ---------- */
+var KIT=[
+ ['1','BlackBoard UNO R3','O cérebro do kit. Roda o seu programa e fala com todas as outras peças.','todos'],
+ ['1','WorkPlate 400','Base que segura a placa e a protoboard no lugar, para nada escorregar.','todos'],
+ ['1','Protoboard de 400 pontos','Tabuleiro de furos para montar circuitos sem solda.','todos'],
+ ['30','Jumpers macho-macho','Fios com ponta de metal dos dois lados. Ligam um furo a outro.','todos'],
+ ['10','Jumpers macho-fêmea','Um lado encaixa em pinos e o outro em furos. Usados nos módulos com pinos.','Sensor de Ré, Garra'],
+ ['5+5+5','LEDs vermelhos, amarelos e verdes','Lâmpadas pequenas que só acendem no sentido certo.','Semáforo, Ré, Missão'],
+ ['1','LED RGB','Três LEDs em um (vermelho, verde e azul). Misturando, faz qualquer cor.','Pixel'],
+ ['1','LED de alto brilho','LED branco bem mais forte que os coloridos.','Dimmer'],
+ ['15','Resistores de 300Ω','Protegem os LEDs. Faixas: laranja, preto, marrom.','quase todos'],
+ ['5','Resistores de 10kΩ','Usados para medir a luz na LDR. Faixas: marrom, preto, laranja.','Missão Impossível'],
+ ['4','Chaves momentâneas','Botões que só conduzem enquanto apertados.','Piano, Pixel, Dado'],
+ ['1','Potenciômetro 10kΩ + knob','Botão giratório que o Arduino sabe ler, de 0 a 1023.','Dimmer, Pixel'],
+ ['1','Buzzer','Pequeno alto-falante que apita ou toca notas.','Piano, Missão, Ré'],
+ ['1','LDR 5mm','Resistor sensível à luz: muda de valor conforme a claridade.','Missão Impossível'],
+ ['1','Mini laser','Feixe de luz vermelha, usado como "fio invisível".','Missão Impossível'],
+ ['1','Sensor ultrassônico','Mede distância mandando um som que o ouvido não escuta.','Sensor de Ré'],
+ ['1','Display de 7 segmentos','Mostra números desenhados com sete tracinhos de LED.','Dado Eletrônico'],
+ ['1','CI 4511','Chip que traduz números em binário para o display.','Dado Eletrônico'],
+ ['1','Módulo joystick','Dois potenciômetros e um botão em uma alavanca.','Garra Robótica'],
+ ['1','Micro servo motor','Motor que gira até um ângulo exato, de 0 a 180 graus.','Garra Robótica'],
+ ['1','Garra Ant','Garra de plástico que o servo abre e fecha.','Garra Robótica'],
+ ['1','Sensor de temperatura e umidade DHT11','Não entra nos 8 projetos. Fica para você explorar depois.','extra'],
+ ['1+1','Cabo USB e chave Phillips','O cabo liga a placa ao computador. A chave serve para a WorkPlate e a garra.','montagem']
+];
+var kl='';
+KIT.forEach(function(k){kl+='<li><span class="nm"><span class="q">'+k[0]+'</span>'+k[1]+'</span><span class="u">'+k[2]+'</span><span class="p">usado em: '+k[3]+'</span></li>'});
+document.getElementById('kitlist').innerHTML=kl;
+
+/* ---------- blocos de código ---------- */
+var cid=0;
+function chunks(list){
+  return list.map(function(b){
+    return '<div class="chunk"><pre class="code">'+hl(b.code)+'</pre><div class="trad"><span class="lb">Traduzindo</span>'+b.txt+'</div></div>';
+  }).join('');
+}
+function fullCode(list){
+  var id='full'+(cid++),txt=list.map(function(b){return b.code}).join('\n\n');
+  return '<details class="full"><summary>Código completo (para copiar e colar na IDE)</summary><div class="in"><button class="btn" data-copy="'+id+'" type="button">Copiar código</button><pre class="code" id="'+id+'">'+hl(txt)+'</pre></div></details>';
+}
+function steps(prefix,arr){
+  return '<ol class="passos">'+arr.map(function(t,i){
+    var k='chk-'+prefix+'-'+i;
+    return '<li><label><input type="checkbox" id="'+k+'" '+(ls(k)?'checked':'')+'><span>'+t+'</span></label></li>';
+  }).join('')+'</ol>';
+}
+
+/* blink */
+var BLINK=[
+ {code:'void setup() {\n  pinMode(LED_BUILTIN, OUTPUT);\n}',txt:'<p><b>setup</b> roda uma vez só, quando a placa liga.</p><p>Aqui avisamos que o LED da placa (<code>LED_BUILTIN</code>, o pino 13) vai <b>enviar</b> energia, por isso <code>OUTPUT</code>.</p>'},
+ {code:'void loop() {\n  digitalWrite(LED_BUILTIN, HIGH);\n  delay(1000);\n  digitalWrite(LED_BUILTIN, LOW);\n  delay(1000);\n}',txt:'<p><b>loop</b> repete para sempre.</p><p>Liga o LED (<code>HIGH</code>), espera 1000 milissegundos, desliga (<code>LOW</code>) e espera mais um segundo. Troque o 1000 por 200 e veja o que acontece.</p>'}
+];
+document.getElementById('blink').innerHTML=chunks(BLINK)+fullCode(BLINK);
+
+var INST=[
+ 'Baixe e instale o <b>Arduino IDE</b> (gratuito) em <b>arduino.cc/software</b>. É o programa onde você escreve e envia o código.',
+ 'Conecte a placa ao computador com o cabo USB. Um LED verde de energia deve acender.',
+ 'No Arduino IDE, abra <b>Ferramentas &gt; Placa</b> e escolha <b>Arduino UNO</b>. A BlackBoard UNO R3 funciona como uma UNO.',
+ 'Em <b>Ferramentas &gt; Porta</b>, escolha a porta em que a placa aparece (algo como COM3, no Windows).',
+ 'Cole o código do primeiro teste abaixo e clique na seta <b>Carregar</b> (para a direita). Quando aparecer "Carregado", o programa já está na placa.'
+];
+document.getElementById('passos-instalar').outerHTML=steps('inst',INST);
+
+/* ---------- projetos ---------- */
+var P=[];
+
+P.push({id:'semaforo',nome:'Semáforo',tag:'LEDs e tempo',nivel:1,tempo:'20 min',
+ resumo:'Três LEDs que acendem em sequência como um semáforo de verdade. É o melhor primeiro projeto: só LED, resistor e fio.',
+ aprende:['ligar um LED com resistor','dar nome aos pinos','controlar o tempo com delay'],
+ pecas:[['3','LEDs: vermelho, amarelo e verde'],['3','resistores de 300Ω'],['5','jumpers macho-macho']],
+ ideia:'Cada LED tem o seu pino e o seu resistor. O programa liga um LED por vez, espera e passa para o próximo. O Arduino não "pensa" em semáforo: ele só obedece à lista de ordens.',
+ passos:[
+  'Desconecte o cabo USB e faça a <b>preparação padrão</b> (GND no trilho −).',
+  'Encaixe o <b>LED vermelho</b> na protoboard, em duas colunas vizinhas. A perna longa (+) fica numa, a curta (−) na outra.',
+  'Encaixe um <b>resistor de 300Ω</b> com uma ponta na coluna da perna longa e a outra ponta numa coluna livre ao lado.',
+  'Ligue um jumper do <b>pino 8</b> da placa até a ponta livre do resistor.',
+  'Ligue um jumper da coluna da perna curta até o <b>trilho −</b> (GND).',
+  'Repita para o <b>LED amarelo</b> (pino 9) e para o <b>verde</b> (pino 10).',
+  'Confira: três resistores, três LEDs, e todas as pernas curtas indo para o GND.'],
+ fio:{blocks:[
+  {name:'LED vermelho',terms:[{label:'perna longa (+)',from:'D8',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'LED amarelo',terms:[{label:'perna longa (+)',from:'D9',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'LED verde',terms:[{label:'perna longa (+)',from:'D10',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]}]},
+ blocos:[
+  {code:'const int vermelho = 8;\nconst int amarelo = 9;\nconst int verde = 10;',txt:'<p>Aqui damos <b>apelidos</b> aos pinos. Em vez de lembrar que o vermelho está no 8, escrevemos <code>vermelho</code>.</p><p><code>int</code> quer dizer "número inteiro" e <code>const</code> quer dizer "este valor nunca muda".</p>'},
+  {code:'void setup() {\n  pinMode(vermelho, OUTPUT);\n  pinMode(amarelo, OUTPUT);\n  pinMode(verde, OUTPUT);\n}',txt:'<p>Avisamos ao Arduino que os três pinos vão <b>enviar</b> energia aos LEDs. Isso é feito uma única vez, na partida.</p>'},
+  {code:'void loop() {\n  // Verde: pode passar\n  digitalWrite(verde, HIGH);\n  delay(4000);\n  digitalWrite(verde, LOW);\n\n  // Amarelo: atenção\n  digitalWrite(amarelo, HIGH);\n  delay(1500);\n  digitalWrite(amarelo, LOW);\n\n  // Vermelho: pare\n  digitalWrite(vermelho, HIGH);\n  delay(4000);\n  digitalWrite(vermelho, LOW);\n}',txt:'<p>Cada fase segue o mesmo trio de ordens: <b>liga</b> o LED, <b>espera</b> e <b>desliga</b>.</p><p>O tempo do <code>delay</code> é em milésimos de segundo, então 4000 são 4 segundos. Quando chega ao fim, o <code>loop</code> recomeça do verde.</p>'}],
+ teste:'Verde por 4 segundos, amarelo por 1,5 e vermelho por 4, repetindo sem parar.',
+ erros:[['Nenhum LED acende','Veja se o cabo USB está conectado e se os resistores estão encaixados na mesma coluna da perna longa do LED. Confira também se as pernas curtas chegam ao trilho −.'],['Um LED não acende','Quase sempre ele está invertido. Tire e gire o LED meia-volta.'],['O LED acende fraquinho','Você pode ter usado o resistor de 10kΩ. Confira as faixas: o certo é laranja, preto, marrom.']],
+ desafio:'Faça o LED amarelo piscar três vezes antes de o vermelho acender. Dica: repita as linhas de liga e desliga com delays curtos, de 200.'});
+
+P.push({id:'piano',nome:'Piano',tag:'Botões e som',nivel:2,tempo:'30 min',
+ resumo:'Quatro botões, quatro notas: Dó, Ré, Mi e Fá. Quanto mais botões apertados, mais som.',
+ aprende:['ler botões','tocar notas no buzzer','repetir tarefas com for e listas'],
+ pecas:[['4','chaves momentâneas (botões)'],['1','buzzer'],['8','jumpers macho-macho']],
+ ideia:'Cada botão tem um pino que escuta. Em repouso o pino recebe sinal alto. Quando você aperta, o botão liga o pino ao GND e o sinal cai para baixo. O programa vê essa queda e manda o buzzer tocar a nota daquele botão.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  'Encaixe cada <b>botão</b> atravessando o vão central da protoboard, deixando um espaço entre eles.',
+  'De cada botão, ligue um jumper do lado de cima até os pinos <b>2, 3, 4 e 5</b> (um pino por botão).',
+  'Ligue o lado de baixo de cada botão ao <b>trilho −</b> (GND).',
+  'Encaixe o <b>buzzer</b>: perna com o sinal + no <b>pino 8</b> e a outra no <b>trilho −</b>.',
+  'Confira: quatro botões, cada um com um fio para um pino e outro para o GND.'],
+ fio:{blocks:[
+  {name:'Botão 1 (Dó)',terms:[{label:'lado de cima',from:'D2'},{label:'lado de baixo',from:'GND'}]},
+  {name:'Botão 2 (Ré)',terms:[{label:'lado de cima',from:'D3'},{label:'lado de baixo',from:'GND'}]},
+  {name:'Botão 3 (Mi)',terms:[{label:'lado de cima',from:'D4'},{label:'lado de baixo',from:'GND'}]},
+  {name:'Botão 4 (Fá)',terms:[{label:'lado de cima',from:'D5'},{label:'lado de baixo',from:'GND'}]},
+  {name:'Buzzer',terms:[{label:'perna com sinal +',from:'D8'},{label:'outra perna (−)',from:'GND'}]}]},
+ blocos:[
+  {code:'const int botoes[] = {2, 3, 4, 5};\nconst int notas[]  = {262, 294, 330, 349};\nconst int buzzer = 8;',txt:'<p>Uma <b>lista</b> guarda vários valores sob um nome só. <code>botoes</code> tem os pinos dos botões e <code>notas</code> tem a frequência (em Hz) de cada nota: Dó, Ré, Mi e Fá.</p><p>Importante: a contagem começa em <b>0</b>. O primeiro item é <code>botoes[0]</code>, que vale 2.</p>'},
+  {code:'void setup() {\n  for (int i = 0; i < 4; i++) {\n    pinMode(botoes[i], INPUT_PULLUP);\n  }\n  pinMode(buzzer, OUTPUT);\n}',txt:'<p><code>for</code> repete um bloco. Esta linha diz: "comece com i valendo 0, repita enquanto i for menor que 4, e some 1 a cada volta". Assim configuramos os quatro botões sem escrever quatro vezes.</p><p><code>INPUT_PULLUP</code> faz o pino escutar com um resistor interno, e dispensa o resistor de 10kΩ.</p>'},
+  {code:'void loop() {\n  bool algumApertado = false;\n\n  for (int i = 0; i < 4; i++) {\n    if (digitalRead(botoes[i]) == LOW) {\n      tone(buzzer, notas[i]);\n      algumApertado = true;\n    }\n  }\n\n  if (!algumApertado) {\n    noTone(buzzer);\n  }\n}',txt:'<p>A cada volta o programa olha os quatro botões. Se um deles estiver em <code>LOW</code> (apertado), toca a nota correspondente com <code>tone</code>.</p><p><code>algumApertado</code> é uma caixinha de sim ou não (<code>bool</code>). Se nenhum botão estiver apertado, o <code>noTone</code> silencia o buzzer.</p>'}],
+ teste:'Cada botão toca a sua nota enquanto estiver apertado, e o som para quando você solta.',
+ erros:[['O buzzer toca sem apertar nada','O botão provavelmente está rodado 90 graus no encaixe, o que o deixa sempre ligado. Gire o botão e encaixe de novo.'],['Todas as notas soam iguais','Seu buzzer pode ser do tipo "ativo", que só apita em um tom. Nesse caso o piano funciona, mas sem variar a nota.'],['Um botão não responde','Confira se os dois lados estão em lados opostos do vão central.']],
+ desafio:'Acrescente um LED com resistor de 300Ω em cada botão (use os pinos 9, 10, 11 e 12) e faça cada nota acender o seu LED.'});
+
+P.push({id:'missao',nome:'Missão Impossível',tag:'Luz e laser',nivel:2,tempo:'40 min',
+ resumo:'Um laser aponta para um sensor de luz. Se alguém cortar o feixe, o alarme dispara.',
+ aprende:['medir luz com a LDR','usar o Monitor Serial','decidir com if e else'],
+ pecas:[['1','mini laser'],['1','LDR 5mm'],['1','resistor de 10kΩ'],['1','LED + 1 resistor de 300Ω'],['1','buzzer'],['jumpers','macho-macho']],
+ ideia:'A LDR é um resistor que muda conforme a luz: com laser em cima, passa muita corrente. Junto com o resistor de 10kΩ ela forma um "divisor", e o pino A0 mede o resultado como um número de 0 a 1023. Se o número cair, é porque algo cortou o feixe.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  'Encaixe a <b>LDR</b> e o <b>resistor de 10kΩ</b> de modo que uma perna de cada fique na <b>mesma coluna</b>. Essa coluna é o "meio".',
+  'Ligue a outra perna da LDR ao <b>trilho +</b> (5V) e a outra ponta do resistor ao <b>trilho −</b> (GND).',
+  'Ligue um jumper da coluna do meio até o pino <b>A0</b>.',
+  'Monte o <b>LED de alarme</b> com resistor de 300Ω, como no semáforo, no <b>pino 9</b>.',
+  'Encaixe o <b>buzzer</b> com + no <b>pino 8</b> e a outra perna no GND.',
+  'Ligue o <b>fio vermelho do laser</b> ao trilho + e o <b>preto</b> ao trilho −. Prenda o laser em um livro, apontado para a LDR, a uns 30 cm.'],
+ avisoExtra:'<div class="note aviso"><b>Cuidado com o laser</b><p>Nunca aponte para os olhos de ninguém, nem de animais, nem para superfícies que reflitam como espelhos. A luz é fraca, mas pode machucar a vista.</p></div>',
+ fio:{blocks:[
+  {name:'Mini laser',terms:[{label:'fio vermelho (+)',from:'5V'},{label:'fio preto (−)',from:'GND'}]},
+  {name:'LDR + resistor 10kΩ',terms:[{label:'perna da LDR',from:'5V'},{label:'meio (LDR + resistor)',from:'A0'},{label:'ponta do resistor',from:'GND'}]},
+  {name:'LED de alarme',terms:[{label:'perna longa (+)',from:'D9',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'Buzzer',terms:[{label:'perna com sinal +',from:'D8'},{label:'outra perna (−)',from:'GND'}]}]},
+ blocos:[
+  {code:'const int ldr = A0;\nconst int buzzer = 8;\nconst int ledAlarme = 9;\nint limite = 500;',txt:'<p>Nomeamos os pinos. <code>limite</code> é a linha de corte: abaixo dela consideramos que o feixe foi cortado. O 500 é só um palpite. Você vai ajustar no teste.</p>'},
+  {code:'void setup() {\n  pinMode(buzzer, OUTPUT);\n  pinMode(ledAlarme, OUTPUT);\n  Serial.begin(9600);\n}',txt:'<p>Os dois pinos de saída são configurados como antes.</p><p><code>Serial.begin(9600)</code> abre um "telefone" entre a placa e o computador, para a placa poder <b>escrever mensagens</b> na tela. 9600 é a velocidade da conversa.</p>'},
+  {code:'void loop() {\n  int luz = analogRead(ldr);\n  Serial.println(luz);\n\n  if (luz < limite) {\n    digitalWrite(ledAlarme, HIGH);\n    tone(buzzer, 1000);\n  } else {\n    digitalWrite(ledAlarme, LOW);\n    noTone(buzzer);\n  }\n  delay(50);\n}',txt:'<p><code>analogRead</code> mede a luz e guarda em <code>luz</code>. <code>Serial.println</code> mostra esse número no computador.</p><p>O <code>if</code> compara: "se <code>luz</code> for menor que o limite, acende o LED e apita; <b>senão</b>, apaga e silencia".</p>'}],
+ teste:'Com o laser na LDR, tudo fica quieto. Ao passar a mão na frente do feixe, o LED acende e o buzzer apita.',
+ calibra:'<div class="note dica"><b>Como achar o limite certo</b><p>1. Envie o código e abra <b>Ferramentas &gt; Monitor Serial</b> (velocidade 9600).<br>2. Com o laser na LDR, anote o número (por exemplo, 850).<br>3. Tape o feixe e anote de novo (por exemplo, 200).<br>4. Troque <code>limite</code> por um valor no meio dos dois (por exemplo, 500) e envie de novo.</p></div>',
+ erros:[['O alarme dispara o tempo todo','A luz do ambiente pode estar muito forte ou o laser está fora da LDR. Aproxime o laser e confira os números no Monitor Serial.'],['Os números no Monitor Serial são símbolos estranhos','A velocidade do Monitor Serial deve ser 9600, a mesma do <code>Serial.begin</code>.'],['O número não muda nunca','Confira se o fio do "meio" vai para A0 e se o resistor é o de 10kΩ.']],
+ desafio:'Faça o alarme continuar tocando depois que o feixe for cortado, mesmo que a pessoa saia da frente. Dica: crie uma variável <code>disparou</code> que vira <code>true</code> uma vez e nunca volta.'});
+
+P.push({id:'dimmer',nome:'Dimmer LED',tag:'Brilho variável',nivel:1,tempo:'20 min',
+ resumo:'Um botão giratório controla o brilho de um LED, como o regulador de luz de uma sala.',
+ aprende:['ler o potenciômetro','mudar escalas com map','controlar brilho com PWM'],
+ pecas:[['1','potenciômetro 10kΩ com knob'],['1','LED de alto brilho'],['1','resistor de 300Ω'],['5','jumpers macho-macho']],
+ ideia:'O potenciômetro é um divisor de tensão que você ajusta com a mão: no meio dele sai um valor entre 0 e 1023, conforme o giro. O programa converte esse valor para a escala de 0 a 255 que o LED entende e envia por um pino com PWM.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  'Encaixe o <b>potenciômetro</b> na protoboard, com cada uma das 3 pernas em uma coluna diferente. Coloque o <b>knob</b> no eixo.',
+  'Ligue a perna da <b>esquerda</b> ao trilho + (5V) e a da <b>direita</b> ao trilho − (GND).',
+  'Ligue a perna do <b>meio</b> ao pino <b>A0</b>.',
+  'Encaixe o <b>LED de alto brilho</b>, com um resistor de 300Ω na perna longa. Ligue o resistor ao <b>pino 9</b>.',
+  'Ligue a perna curta do LED ao <b>trilho −</b>.'],
+ fio:{blocks:[
+  {name:'Potenciômetro 10kΩ',terms:[{label:'perna da esquerda',from:'5V'},{label:'perna do meio',from:'A0'},{label:'perna da direita',from:'GND'}]},
+  {name:'LED de alto brilho',terms:[{label:'perna longa (+)',from:'D9',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]}]},
+ blocos:[
+  {code:'const int pot = A0;\nconst int led = 9;',txt:'<p>O potenciômetro entra pelo pino <b>A0</b> (analógico) e o LED sai pelo pino <b>9</b>, que tem o sinal <b>~</b> do PWM.</p>'},
+  {code:'void setup() {\n  pinMode(led, OUTPUT);\n}',txt:'<p>Só o LED precisa ser configurado. Os pinos analógicos já nascem prontos para ler.</p>'},
+  {code:'void loop() {\n  int leitura = analogRead(pot);\n  int brilho = map(leitura, 0, 1023, 0, 255);\n  analogWrite(led, brilho);\n}',txt:'<p><code>analogRead</code> entrega um valor de 0 a 1023, mas <code>analogWrite</code> só entende de 0 a 255.</p><p>O <code>map</code> faz a conversa: 0 continua 0, 1023 vira 255 e o resto fica proporcional. Com isso, girar o botão muda o brilho em tempo real.</p>'}],
+ teste:'Girando o knob para a direita o LED acende cada vez mais. Para a esquerda, apaga.',
+ erros:[['O brilho funciona ao contrário','Troque os fios do 5V e do GND nas pernas de fora do potenciômetro.'],['O LED não varia, só liga e desliga','Veja se o resistor do LED está no pino <b>9</b> e não em um pino sem ~.'],['O LED não acende nunca','LED invertido: gire a perna longa para o lado do pino.']],
+ desafio:'Troque o LED de alto brilho por um LED vermelho e faça o brilho aumentar quando você girar para a esquerda. Dica: no <code>map</code>, inverta os dois últimos números.'});
+
+P.push({id:'pixel',nome:'Pixel',tag:'Cores com LED RGB',nivel:2,tempo:'35 min',
+ resumo:'Um LED que muda de cor a cada clique, com o brilho ajustado pelo potenciômetro. É assim que cada pixel de uma tela mistura as cores.',
+ aprende:['misturar vermelho, verde e azul','listas com duas dimensões','mudar de estado com um botão'],
+ pecas:[['1','LED RGB'],['3','resistores de 300Ω'],['1','botão'],['1','potenciômetro'],['jumpers','macho-macho']],
+ ideia:'O LED RGB tem três LEDs dentro de uma cápsula só: vermelho, verde e azul, com a perna de trás compartilhada. Com PWM, o Arduino dá a cada cor uma força de 0 a 255. Misturar luz funciona diferente de misturar tinta: vermelho com verde dá amarelo, e as três juntas dão branco.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  'Segure o <b>LED RGB</b> com o lado achatado para a esquerda. As pernas são, da esquerda para a direita: <b>vermelho, comum (a mais longa), verde e azul</b>. Encaixe em quatro colunas diferentes.',
+  'Ligue a perna <b>comum</b> ao trilho − (GND).',
+  'Em cada uma das outras três pernas, encaixe um <b>resistor de 300Ω</b> e ligue-o aos pinos: vermelho no <b>9</b>, verde no <b>10</b>, azul no <b>11</b>.',
+  'Encaixe o <b>botão</b> sobre o vão central: um lado no <b>pino 2</b>, o outro no GND.',
+  'Encaixe o <b>potenciômetro</b>: pernas de fora no 5V e no GND, perna do meio no <b>A0</b>.'],
+ fio:{blocks:[
+  {name:'LED RGB',terms:[{label:'perna vermelha',from:'D9',via:'300Ω'},{label:'perna verde',from:'D10',via:'300Ω'},{label:'perna azul',from:'D11',via:'300Ω'},{label:'perna comum (longa)',from:'GND'}]},
+  {name:'Botão',terms:[{label:'um lado',from:'D2'},{label:'outro lado',from:'GND'}]},
+  {name:'Potenciômetro',terms:[{label:'perna da esquerda',from:'5V'},{label:'perna do meio',from:'A0'},{label:'perna da direita',from:'GND'}]}]},
+ blocos:[
+  {code:'const int pinoR = 9;\nconst int pinoG = 10;\nconst int pinoB = 11;\nconst int botao = 2;\nconst int pot = A0;\n\n// cada linha é uma cor: {vermelho, verde, azul}\nconst int cores[7][3] = {\n  {255, 0, 0},     // vermelho\n  {0, 255, 0},     // verde\n  {0, 0, 255},     // azul\n  {255, 100, 0},   // amarelo\n  {0, 255, 255},   // ciano\n  {255, 0, 255},   // magenta\n  {255, 255, 255}  // branco\n};\n\nint corAtual = 0;',txt:'<p>A tabela <code>cores</code> tem 7 linhas (as cores) e 3 colunas (a força de vermelho, verde e azul).</p><p><code>cores[3][0]</code> significa: linha 3 (amarelo), coluna 0 (vermelho). <code>corAtual</code> lembra em qual linha estamos.</p>'},
+  {code:'void setup() {\n  pinMode(pinoR, OUTPUT);\n  pinMode(pinoG, OUTPUT);\n  pinMode(pinoB, OUTPUT);\n  pinMode(botao, INPUT_PULLUP);\n}',txt:'<p>Três saídas para as cores e uma entrada para o botão, com o mesmo truque do piano.</p>'},
+  {code:'void loop() {\n  if (digitalRead(botao) == LOW) {\n    corAtual = corAtual + 1;\n    if (corAtual > 6) {\n      corAtual = 0;\n    }\n    delay(250);\n  }\n\n  int leitura = analogRead(pot);\n  float fator = leitura / 1023.0;\n\n  analogWrite(pinoR, cores[corAtual][0] * fator);\n  analogWrite(pinoG, cores[corAtual][1] * fator);\n  analogWrite(pinoB, cores[corAtual][2] * fator);\n}',txt:'<p><b>Parte 1:</b> se o botão foi apertado, passa para a próxima cor. Ao passar da sétima, volta para a primeira. O <code>delay(250)</code> evita que um clique pule várias cores de uma vez.</p><p><b>Parte 2:</b> o potenciômetro vira um número entre 0 e 1 (<code>fator</code>). Multiplicando cada cor por ele, o brilho sobe e desce sem mudar a mistura.</p>'}],
+ teste:'Cada clique no botão troca a cor. Girando o potenciômetro, o brilho muda.',
+ erros:[['As cores aparecem trocadas','Confira qual perna é qual: da esquerda para a direita, com o lado achatado para a esquerda, são vermelho, comum, verde e azul.'],['O LED acende quando devia estar apagado','O seu LED RGB pode ser de ânodo comum. Nesse caso a perna longa vai ao 5V e a lógica do código fica invertida. Confira no manual do kit.'],['O botão pula cores','Aumente o <code>delay(250)</code> para 350.']],
+ desafio:'Faça o LED passar por todas as cores sozinho, a cada meio segundo, sem precisar apertar o botão.'});
+
+P.push({id:'dado',nome:'Dado Eletrônico',tag:'Display e chip',nivel:3,tempo:'60 min',
+ resumo:'Aperte o botão, os números rolam e o display para em um valor de 1 a 6. É o projeto mais trabalhoso do kit, por causa dos muitos fios.',
+ aprende:['usar o display de 7 segmentos','conversar com um chip (CI 4511)','criar funções com nome','sortear números'],
+ pecas:[['1','display de 7 segmentos'],['1','CI 4511'],['7','resistores de 300Ω'],['1','botão'],['muitos','jumpers macho-macho']],
+ ideia:'Ligar o display direto no Arduino gastaria sete pinos. O chip 4511 resolve isso: você manda o número em binário por apenas <b>4 pinos</b> e ele acende os segmentos certos sozinho. O Arduino só precisa dizer um número.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>. Monte devagar, uma etapa por vez.',
+  '<b>Chip:</b> encaixe o 4511 atravessando o vão central. Gire a protoboard para que o entalhe do chip fique para cima: o pino 1 fica no canto superior esquerdo.',
+  '<b>Energia do chip:</b> pino 16 no 5V; pino 8 no GND; pinos 3 e 4 no 5V; pino 5 no GND.',
+  '<b>Comandos:</b> pino 7 do chip no <b>D2</b>; pino 1 no <b>D3</b>; pino 2 no <b>D4</b>; pino 6 no <b>D5</b>.',
+  '<b>Display:</b> encaixe-o atravessando o vão central, com o ponto decimal embaixo à direita. Ligue um dos pinos "com" (3 ou 8) ao GND.',
+  '<b>Segmentos:</b> use a tabela abaixo. Cada saída do chip vai a um resistor de 300Ω e depois ao pino do display.',
+  '<b>Botão:</b> um lado no <b>D6</b> e o outro no GND.'],
+ fio:{blocks:[
+  {name:'CI 4511 (comandos)',terms:[{label:'A · pino 7',from:'D2'},{label:'B · pino 1',from:'D3'},{label:'C · pino 2',from:'D4'},{label:'D · pino 6',from:'D5'},{label:'LT · pino 3',from:'5V'},{label:'BI · pino 4',from:'5V'},{label:'LE · pino 5',from:'GND'},{label:'VSS · pino 8',from:'GND'},{label:'VDD · pino 16',from:'5V'}]},
+  {name:'Botão',terms:[{label:'um lado',from:'D6'},{label:'outro lado',from:'GND'}]}]},
+ extra:function(){
+  return '<h3>Saídas do chip até o display</h3><figure><div class="fig" id="fio2"></div><figcaption>Cada saída do 4511 passa por um resistor de 300Ω e chega a um segmento do display. Os dois pinos "com" vão ao GND.</figcaption></figure>'+
+  '<div class="tw"><table><thead><tr><th>Saída do 4511</th><th>Resistor</th><th>Pino do display</th></tr></thead><tbody>'+
+  [['a · pino 13','7'],['b · pino 12','6'],['c · pino 11','4'],['d · pino 10','2'],['e · pino 9','1'],['f · pino 15','9'],['g · pino 14','10']].map(function(r){return '<tr><td class="m">'+r[0]+'</td><td class="m">300Ω</td><td class="m">'+r[1]+'</td></tr>'}).join('')+
+  '</tbody></table></div>'+
+  '<div class="grid2"><figure style="margin:0"><div class="fig"><div data-fig="ic">'+figIC()+'</div></div><figcaption>Pinos do 4511 vistos de cima.</figcaption></figure><figure style="margin:0"><div class="fig">'+figDisplay()+'</div><figcaption>Pinos do display visto de frente.</figcaption></figure></div>'+
+  '<div class="note dica"><b>Números em binário</b><p>O chip entende números em "ligado e desligado". Com 4 pinos (D, C, B, A): 1 = 0001, 2 = 0010, 3 = 0011, 4 = 0100, 5 = 0101 e 6 = 0110. O código faz essa conversão sozinho.</p></div>';
+ },
+ fio2:{left:'4511|saídas',blocks:[
+  {name:'Display 7 segmentos',terms:[{label:'segmento a · pino 7',from:'a · 13',via:'300Ω'},{label:'segmento b · pino 6',from:'b · 12',via:'300Ω'},{label:'segmento c · pino 4',from:'c · 11',via:'300Ω'},{label:'segmento d · pino 2',from:'d · 10',via:'300Ω'},{label:'segmento e · pino 1',from:'e · 9',via:'300Ω'},{label:'segmento f · pino 9',from:'f · 15',via:'300Ω'},{label:'segmento g · pino 10',from:'g · 14',via:'300Ω'},{label:'comum · pino 3',from:'GND'},{label:'comum · pino 8',from:'GND'}]}]},
+ blocos:[
+  {code:'const int pinoA = 2;\nconst int pinoB = 3;\nconst int pinoC = 4;\nconst int pinoD = 5;\nconst int botao = 6;\n\nvoid mostrarNumero(int n) {\n  digitalWrite(pinoA, bitRead(n, 0));\n  digitalWrite(pinoB, bitRead(n, 1));\n  digitalWrite(pinoC, bitRead(n, 2));\n  digitalWrite(pinoD, bitRead(n, 3));\n}',txt:'<p>Aqui criamos uma <b>função</b>: uma receita com nome. Sempre que escrevermos <code>mostrarNumero(5)</code>, o Arduino executa essas linhas.</p><p><code>bitRead(n, 0)</code> pega o primeiro "ligado ou desligado" do número em binário, <code>bitRead(n, 1)</code> pega o segundo, e assim por diante. Cada resposta vai ao pino correspondente do chip.</p>'},
+  {code:'void setup() {\n  pinMode(pinoA, OUTPUT);\n  pinMode(pinoB, OUTPUT);\n  pinMode(pinoC, OUTPUT);\n  pinMode(pinoD, OUTPUT);\n  pinMode(botao, INPUT_PULLUP);\n  randomSeed(analogRead(A0));\n  mostrarNumero(0);\n}',txt:'<p>Quatro saídas para o chip e uma entrada para o botão.</p><p><code>randomSeed</code> dá um ponto de partida diferente ao sorteio, usando o ruído de um pino solto (A0). Sem isso, o dado sortearia sempre a mesma sequência. O dado começa mostrando 0.</p>'},
+  {code:'void loop() {\n  if (digitalRead(botao) == LOW) {\n    for (int i = 0; i < 12; i++) {\n      mostrarNumero(random(1, 7));\n      delay(60 + i * 12);\n    }\n    int resultado = random(1, 7);\n    mostrarNumero(resultado);\n  }\n}',txt:'<p>Ao apertar o botão, o <code>for</code> mostra 12 números sorteados, cada vez mais devagar (o <code>delay</code> cresce com o <code>i</code>), para dar a impressão de dado rolando.</p><p><code>random(1, 7)</code> sorteia de 1 a 6: o 7 não entra. O último sorteio é o resultado, que fica na tela.</p>'}],
+ teste:'O display começa em 0. Ao apertar o botão, os números rolam e param em um valor de 1 a 6.',
+ erros:[['O display não acende nada','Confira os pinos 3, 4 e 16 do chip no 5V e 5 e 8 no GND. Sem eles o chip fica apagado.'],['Um segmento fica sempre apagado','Procure o resistor e o fio daquele segmento na tabela. Quase sempre é um fio solto.'],['Os números aparecem errados','Provavelmente os fios A, B, C e D estão trocados. Confira os pinos 7, 1, 2 e 6 do chip.'],['Os segmentos acesos são o oposto do esperado','O seu display pode ser de ânodo comum, que não combina com o 4511. Confira o modelo impresso no display ou no manual.']],
+ desafio:'Faça o display mostrar um número de 1 a 6 e depois, ao apertar o botão por mais de 2 segundos, sortear de 1 a 9.'});
+
+P.push({id:'re',nome:'Sensor de Ré',tag:'Distância e alerta',nivel:3,tempo:'40 min',
+ resumo:'Igual ao sensor de estacionar do carro: quanto mais perto o obstáculo, mais rápido o bipe e mais perigosa a cor do LED.',
+ aprende:['medir distância com ultrassom','criar uma função que devolve um valor','combinar sensores e alertas'],
+ pecas:[['1','sensor ultrassônico'],['3','LEDs: verde, amarelo e vermelho'],['3','resistores de 300Ω'],['1','buzzer'],['4','jumpers macho-fêmea']],
+ ideia:'O sensor manda um "grito" que ninguém escuta e espera o eco voltar. Quanto mais demora, mais longe está o obstáculo. O Arduino mede esse tempo e transforma em centímetros. Depois escolhe a luz e o ritmo do bipe.',
+ passos:[
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  'Use os <b>jumpers macho-fêmea</b> para ligar os 4 pinos do sensor. Cada ponta fêmea encaixa em um pino do sensor.',
+  'Ligue <b>VCC</b> ao 5V, <b>GND</b> ao GND, <b>Trig</b> ao pino <b>9</b> e <b>Echo</b> ao pino <b>10</b>.',
+  'Monte os três LEDs com resistores de 300Ω: <b>verde no pino 5</b>, <b>amarelo no 6</b> e <b>vermelho no 7</b>.',
+  'Encaixe o <b>buzzer</b> com + no <b>pino 8</b> e a outra perna no GND.',
+  'Deixe o sensor virado para a frente, com os dois "olhos" livres.'],
+ fio:{blocks:[
+  {name:'Sensor ultrassônico',terms:[{label:'VCC',from:'5V'},{label:'Trig',from:'D9'},{label:'Echo',from:'D10'},{label:'GND',from:'GND'}]},
+  {name:'LED verde',terms:[{label:'perna longa (+)',from:'D5',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'LED amarelo',terms:[{label:'perna longa (+)',from:'D6',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'LED vermelho',terms:[{label:'perna longa (+)',from:'D7',via:'300Ω'},{label:'perna curta (−)',from:'GND'}]},
+  {name:'Buzzer',terms:[{label:'perna com sinal +',from:'D8'},{label:'outra perna (−)',from:'GND'}]}]},
+ blocos:[
+  {code:'const int trig = 9;\nconst int echo = 10;\nconst int buzzer = 8;\nconst int ledVerde = 5;\nconst int ledAmarelo = 6;\nconst int ledVermelho = 7;',txt:'<p>Apelidos para os pinos. <code>trig</code> é o pino que manda o som e <code>echo</code> é o que escuta o eco.</p>'},
+  {code:'void setup() {\n  pinMode(trig, OUTPUT);\n  pinMode(echo, INPUT);\n  pinMode(buzzer, OUTPUT);\n  pinMode(ledVerde, OUTPUT);\n  pinMode(ledAmarelo, OUTPUT);\n  pinMode(ledVermelho, OUTPUT);\n  Serial.begin(9600);\n}',txt:'<p>O <code>trig</code> envia e o <code>echo</code> escuta (<code>INPUT</code>). Também abrimos o Monitor Serial para você ver as distâncias medidas.</p>'},
+  {code:'long medirDistancia() {\n  digitalWrite(trig, LOW);\n  delayMicroseconds(2);\n  digitalWrite(trig, HIGH);\n  delayMicroseconds(10);\n  digitalWrite(trig, LOW);\n\n  long duracao = pulseIn(echo, HIGH, 30000);\n  if (duracao == 0) {\n    return 400;\n  }\n  long cm = duracao * 0.034 / 2;\n  return cm;\n}',txt:'<p>Esta função <b>devolve um número</b> (<code>long</code>): a distância em cm.</p><p>Primeiro o <code>trig</code> dá um pulso de 10 microssegundos, que dispara o som. <code>pulseIn</code> mede quanto tempo o eco demora. Se nada voltar (<code>0</code>), dizemos "400 cm" para não confundir com algo colado no sensor.</p><p>A conta final usa a velocidade do som, e divide por 2 porque o som vai e volta.</p>'},
+  {code:'void loop() {\n  long cm = medirDistancia();\n  Serial.print(cm);\n  Serial.println(" cm");\n\n  digitalWrite(ledVerde, LOW);\n  digitalWrite(ledAmarelo, LOW);\n  digitalWrite(ledVermelho, LOW);\n\n  if (cm > 50) {\n    digitalWrite(ledVerde, HIGH);\n    noTone(buzzer);\n  } else if (cm > 20) {\n    digitalWrite(ledAmarelo, HIGH);\n    tone(buzzer, 1000, 100);\n    delay(400);\n  } else {\n    digitalWrite(ledVermelho, HIGH);\n    tone(buzzer, 1000, 60);\n    delay(100);\n  }\n  delay(60);\n}',txt:'<p>A cada volta mede a distância, mostra no computador e apaga os três LEDs antes de decidir qual acender.</p><p>Se estiver a <b>mais de 50 cm</b>, verde e silêncio. Entre <b>20 e 50 cm</b>, amarelo e bipe devagar. Abaixo de <b>20 cm</b>, vermelho e bipe rápido.</p><p><code>tone(buzzer, 1000, 100)</code> toca 1000 Hz por 100 milissegundos e segue em frente.</p>'}],
+ teste:'Mão longe do sensor, LED verde. Aproximando, o amarelo acende com bipes lentos. Bem perto, vermelho com bipes rápidos.',
+ erros:[['A distância mostra sempre 400 cm','O sensor não está recebendo eco. Confira os fios de Trig e Echo (não podem estar trocados) e se há um objeto à frente.'],['Os valores pulam muito','Objetos macios (roupa, almofada) absorvem o som. Teste com uma parede ou um livro.'],['O buzzer toca o tempo todo','Cheque se o sensor está com 5V e GND firmes. Um fio solto dá medidas malucas.']],
+ desafio:'Mude os limites de 50 e 20 cm para 100 e 40 cm, como em um carro maior. Depois faça o bipe ficar cada vez mais rápido conforme a distância diminui.'});
+
+P.push({id:'garra',nome:'Garra Robótica',tag:'Joystick e servo',nivel:3,tempo:'50 min',
+ resumo:'Mova o joystick e a garra abre e fecha. Primeiro projeto com um motor de verdade.',
+ aprende:['controlar um servo motor','ler o joystick','usar uma biblioteca'],
+ pecas:[['1','Garra Ant com micro servo'],['1','módulo joystick'],['3','jumpers macho-macho'],['4','jumpers macho-fêmea']],
+ ideia:'Um servo é um motor que gira até o ângulo que você pedir, de 0 a 180 graus. O joystick é, por dentro, dois potenciômetros: o do eixo X mede o quanto você empurra para os lados. O programa traduz a posição do joystick no ângulo do servo.',
+ passos:[
+  'Monte a <b>Garra Ant</b> e fixe o servo nela, seguindo o manual de montagem da Robocore. <b>Não prenda</b> o braço de plástico do servo ainda.',
+  'Desconecte o USB e faça a <b>preparação padrão</b>.',
+  '<b>Servo:</b> o fio marrom ou preto vai ao GND, o vermelho ao 5V e o laranja ou amarelo ao pino <b>9</b>. Use jumpers macho-macho encaixados no conector.',
+  '<b>Joystick:</b> com jumpers macho-fêmea, ligue <b>GND</b> ao GND, <b>+5V</b> ao 5V, <b>VRx</b> ao pino <b>A0</b> e <b>SW</b> ao pino <b>2</b>.',
+  'Envie o código abaixo. O servo vai para a posição central. Só então prenda o braço da garra, com a garra aberta.',
+  'Teste os dois lados do joystick e ajuste os ângulos no código para que a garra nunca force no fim do curso.'],
+ avisoExtra:'<div class="note aviso"><b>Não force o servo</b><p>Se o servo zumbir e a garra não se mexer, é porque está empurrando contra o fim do curso. Desligue o USB e reduza os ângulos no código.</p></div>',
+ fio:{blocks:[
+  {name:'Módulo joystick',terms:[{label:'GND',from:'GND'},{label:'+5V',from:'5V'},{label:'VRx',from:'A0'},{label:'SW (botão)',from:'D2'}]},
+  {name:'Micro servo',terms:[{label:'fio marrom (GND)',from:'GND'},{label:'fio vermelho (5V)',from:'5V'},{label:'fio laranja (sinal)',from:'D9'}]}]},
+ blocos:[
+  {code:'#include <Servo.h>\n\nServo servoGarra;\nconst int joyX = A0;\nconst int joyBotao = 2;\nconst int pinoServo = 9;\nconst int anguloMin = 40;\nconst int anguloMax = 140;',txt:'<p><code>#include</code> traz uma <b>biblioteca</b>: um pacote de código pronto, aqui o que sabe mexer com servos.</p><p><code>servoGarra</code> é o nome do nosso servo. <code>anguloMin</code> e <code>anguloMax</code> são os limites de segurança. Ajuste-os conforme a sua garra.</p>'},
+  {code:'void setup() {\n  servoGarra.attach(pinoServo);\n  pinMode(joyBotao, INPUT_PULLUP);\n}',txt:'<p><code>attach</code> avisa que o servo está conectado ao pino 9. O botão do joystick usa o mesmo truque do piano.</p>'},
+  {code:'void loop() {\n  int leitura = analogRead(joyX);\n  int angulo = map(leitura, 0, 1023, anguloMin, anguloMax);\n  servoGarra.write(angulo);\n\n  if (digitalRead(joyBotao) == LOW) {\n    servoGarra.write(anguloMin);\n  }\n  delay(15);\n}',txt:'<p>O joystick entrega um número de 0 a 1023. O <code>map</code> converte para um ângulo entre os dois limites, e o <code>write</code> manda o servo ir até lá.</p><p>Apertar o joystick para baixo (<code>SW</code>) abre a garra de uma vez, como atalho. O <code>delay(15)</code> dá tempo ao servo de se mexer.</p>'}],
+ teste:'O servo acompanha o joystick, e a garra abre e fecha. Ao apertar o joystick, ela volta à posição aberta.',
+ erros:[['O servo treme sem parar','Pode faltar energia. Troque a porta USB ou use um cabo mais curto e firme.'],['O servo vai para o lado errado','Troque <code>anguloMin</code> e <code>anguloMax</code> de lugar no <code>map</code>.'],['Nada se mexe','Confira se o fio laranja está no pino 9 e se o joystick está mesmo no A0, não no A1.']],
+ desafio:'Em vez de seguir a posição direta, faça a garra fechar aos poucos enquanto o joystick estiver empurrado. Dica: soma 1 ao ângulo a cada volta do loop e limite entre anguloMin e anguloMax.'});
+
+var html='';
+P.forEach(function(p,idx){
+  var dots='●'.repeat(p.nivel)+'○'.repeat(3-p.nivel);
+  var lvl=['','Fácil','Médio','Mais trabalhoso'][p.nivel];
+  html+='<section id="'+p.id+'"><div class="ph"><div class="num">'+(idx+1)+'</div><div><div class="eyebrow">Projeto '+(idx+1)+' de 8 · '+p.tag+'</div><h2>'+p.nome+'</h2></div></div>';
+  html+='<p class="lead">'+p.resumo+'</p>';
+  html+='<div class="chips"><span class="chip"><span class="dots">'+dots+'</span> '+lvl+'</span><span class="chip">'+p.tempo+'</span>'+p.aprende.map(function(a){return '<span class="chip">aprende: '+a+'</span>'}).join('')+'</div>';
+  html+='<h3>Como funciona</h3><p>'+p.ideia+'</p>';
+  html+='<h3>Peças</h3><ul class="pecas">'+p.pecas.map(function(x){return '<li><span class="q">'+x[0]+'</span><span>'+x[1]+'</span></li>'}).join('')+'</ul>';
+  if(p.avisoExtra) html+=p.avisoExtra;
+  html+='<h3>Monte passo a passo</h3>'+steps(p.id,p.passos);
+  html+='<h3>Esquema de ligação</h3><figure><div class="fig">'+wiring(p.fio)+'</div><div class="legend"><span><i style="background:var(--w-5v)"></i>vermelho: 5V</span><span><i style="background:var(--w-gnd)"></i>escuro: GND</span><span><i style="background:var(--w1)"></i>outras cores: sinais</span></div><figcaption>As caixas à direita são as peças e as bolinhas são os terminais. Cada linha mostra de qual pino da placa sai o fio. Quando há um resistor no caminho, o valor aparece sobre a linha.</figcaption></figure>';
+  if(p.extra) html+=p.extra();
+  html+='<h3>Código, pedacinho por pedacinho</h3>'+chunks(p.blocos)+fullCode(p.blocos);
+  if(p.calibra) html+=p.calibra;
+  html+='<div class="note certo"><b>Deu certo se</b><p>'+p.teste+'</p></div>';
+  html+='<h3>Se algo der errado</h3><div class="err">'+p.erros.map(function(e){return '<details><summary>'+e[0]+'</summary><p>'+e[1]+'</p></details>'}).join('')+'</div>';
+  html+='<div class="desafio"><b>Desafio</b><p>'+p.desafio+'</p></div></section>';
+});
+document.getElementById('projetos').innerHTML=html;
+var f2=document.getElementById('fio2'); if(f2) f2.innerHTML=wiring(P[5].fio2);
+
+/* ---------- figuras genéricas ---------- */
+document.querySelectorAll('[data-fig]').forEach(function(el){var f=FIGS[el.dataset.fig];if(f) el.innerHTML=f()});
+
+/* ---------- capa e navegação ---------- */
+var idx='',nav='<a href="#kit">Kit</a><a href="#conceitos">Ideias</a><a href="#instalar">Instalar</a><a href="#comandos">Comandos</a>';
+P.forEach(function(p,i){
+  idx+='<a href="#'+p.id+'"><span class="n">'+(i+1)+'</span><span class="t">'+p.nome+'</span><span class="d">'+'●'.repeat(p.nivel)+'○'.repeat(3-p.nivel)+' · '+p.tempo+'</span></a>';
+  nav+='<a href="#'+p.id+'">'+(i+1)+'. '+p.nome+'</a>';
+});
+nav+='<a href="#problemas">Problemas</a><a href="#glossario">Glossário</a>';
+document.getElementById('idx').innerHTML=idx;
+document.getElementById('nav').innerHTML=nav;
+document.addEventListener('click',function(e){
+  var a=e.target.closest('a[href^="#"]'); if(!a) return;
+  var t=document.getElementById(a.getAttribute('href').slice(1)); if(!t) return;
+  e.preventDefault();
+  var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  t.scrollIntoView({behavior:rm?'auto':'smooth',block:'start'});
+});
+
+/* ---------- problemas gerais e glossário ---------- */
+var ERR=[
+ ['A porta não aparece em Ferramentas > Porta','Troque o cabo (alguns só carregam, não passam dados), use outra porta USB e reinicie o Arduino IDE. Se continuar, instale o driver da BlackBoard indicado pela Robocore.'],
+ ['Erro ao carregar o programa','Quase sempre a placa ou a porta estão erradas em Ferramentas. Escolha Arduino UNO e a porta onde a placa aparece. Se o erro persistir, desconecte e conecte o cabo.'],
+ ['O programa não compila (aparece texto vermelho)','Leia a primeira linha do erro. Os motivos mais comuns são ponto e vírgula esquecido, chave que não fechou ou letra maiúscula trocada por minúscula.'],
+ ['O LED não acende','Veja o sentido do LED (perna longa no lado do pino), o resistor (300Ω, não 10kΩ) e se a perna curta chega ao GND.'],
+ ['O Monitor Serial mostra símbolos estranhos','Escolha a velocidade <b>9600</b> no canto inferior da janela do Monitor Serial.'],
+ ['O botão parece apertado o tempo todo','O botão está rodado 90 graus. Gire-o e encaixe de novo, atravessando o vão central.'],
+ ['Cheiro de queimado ou peça muito quente','Desconecte o USB na hora. Procure um fio do 5V encostando no GND ou uma peça invertida. Confira tudo antes de ligar de novo.']
+];
+document.getElementById('err').innerHTML=ERR.map(function(e){return '<details><summary>'+e[0]+'</summary><p>'+e[1]+'</p></details>'}).join('');
+var GL=[
+ ['Arduino','Pequeno computador que roda um programa e controla peças elétricas.'],
+ ['Sketch','O nome de um programa de Arduino.'],
+ ['Pino','Cada "furinho" da placa que liga e desliga ou lê sinais.'],
+ ['5V','Lado positivo da energia da placa.'],
+ ['GND','Lado negativo. Por onde a corrente volta. Também chamado de terra.'],
+ ['Protoboard','Tabuleiro de furos para montar circuitos sem solda.'],
+ ['Resistor','Peça que reduz a corrente. Seu valor é medido em ohms (Ω).'],
+ ['LED','Diodo emissor de luz. Só funciona em um sentido.'],
+ ['PWM','Ligar e desligar muito rápido para simular valores intermediários.'],
+ ['Digital','Só tem dois valores: ligado (HIGH) e desligado (LOW).'],
+ ['Analógico','Valores variados. A placa lê de 0 a 1023.'],
+ ['Variável','Uma caixinha com nome que guarda um valor.'],
+ ['Função','Um conjunto de ordens com nome, para repetir sem reescrever.'],
+ ['Biblioteca','Pacote de código pronto, como a Servo.h.'],
+ ['Monitor Serial','Janela do Arduino IDE onde a placa escreve mensagens.'],
+ ['Pull-up','Resistor interno que mantém um pino em HIGH até o botão puxá-lo para LOW.']
+];
+document.getElementById('gl').innerHTML='<dl style="display:contents">'+GL.map(function(g){return '<div><dt>'+g[0]+'</dt><dd>'+g[1]+'</dd></div>'}).join('')+'</dl>';
+
+/* ---------- caixinhas e copiar ---------- */
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.type==='checkbox'&&t.id.indexOf('chk-')===0) ss(t.id,t.checked)});
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-copy]'); if(!b) return;
+  var pre=document.getElementById(b.dataset.copy),txt=pre.textContent;
+  var done=function(ok){b.textContent=ok?'Copiado!':'Selecione o texto e copie (Ctrl+C)';setTimeout(function(){b.textContent='Copiar código'},2400)};
+  var sel=function(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);done(false)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){done(true)},sel)}else{sel()}
+});
+</script>
+
+</body></html>
