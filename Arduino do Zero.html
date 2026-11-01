@@ -135,6 +135,17 @@ details.full .in{padding:0 14px 14px;display:grid;gap:10px}
 .btn{font:700 15px var(--f-body);background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:10px 16px;cursor:pointer;justify-self:start}
 .btn:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--green);outline-offset:2px}
 
+.fnl{display:grid;gap:8px;margin-block:12px}
+.fnc{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.fnc summary{cursor:pointer;padding:12px 14px;display:grid;gap:4px;font-weight:400}
+.fnc summary .nm{font:600 15px var(--f-mono);color:var(--green)}
+.fnc summary .pl{font-size:16px}
+.fnc .bd{padding:2px 14px 14px;display:grid;gap:12px}
+.fnc .lb{display:block;font:600 11.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fnc .bd p{margin:0;font-size:16px}
+.fnc .ar{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.fnc .ar li{display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);gap:10px;align-items:baseline;font-size:16px}
+.fnc .ar b{font:600 13px var(--f-mono);background:var(--accent);color:var(--accent-ink);border-radius:6px;padding:2px 8px;white-space:nowrap}
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 table{border-collapse:collapse;width:100%;font-size:15.5px}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -269,6 +280,13 @@ footer{padding-block:36px 0;border-top:1px solid var(--line);color:var(--muted);
       <tr><td class="m">if (...) { } else { }</td><td>Se a condição for verdadeira, faz isto. Senão, faz aquilo.</td></tr>
     </tbody>
   </table></div>
+</section>
+
+<section id="funcoes">
+  <div class="eyebrow">Capítulo 5</div>
+  <h2>Dicionário de comandos</h2>
+  <p>Cada comando que aparece nos projetos, explicado por dentro: como se escreve, o que cada pedaço significa, o que a placa faz de verdade e onde costuma dar erro. Toque para abrir.</p>
+  <div id="fndic" class="fnl"></div>
 </section>
 
 <div id="projetos"></div>
@@ -736,6 +754,250 @@ P.push({id:'garra',nome:'Garra Robótica',tag:'Joystick e servo',nivel:3,tempo:'
  erros:[['O servo treme sem parar','Pode faltar energia. Troque a porta USB ou use um cabo mais curto e firme.'],['O servo vai para o lado errado','Troque <code>anguloMin</code> e <code>anguloMax</code> de lugar no <code>map</code>.'],['Nada se mexe','Confira se o fio laranja está no pino 9 e se o joystick está mesmo no A0, não no A1.']],
  desafio:'Em vez de seguir a posição direta, faça a garra fechar aos poucos enquanto o joystick estiver empurrado. Dica: soma 1 ao ângulo a cada volta do loop e limite entre anguloMin e anguloMax.'});
 
+/* ---------- dicionário de comandos ---------- */
+var FN=[
+['void\\s+setup','setup()','void setup() {\n  // ordens aqui\n}','A arrumação da casa: roda uma única vez, quando a placa liga ou é reiniciada.',[['void','a função não devolve nenhum resultado'],['{ }','as chaves guardam as ordens que pertencem a ela']],'Ao receber energia, a placa executa o setup do começo ao fim e só depois passa para o loop. Apertar o botão RESET faz tudo recomeçar daqui.','Uma variável criada dentro do setup não existe dentro do loop. Crie as variáveis no topo do arquivo para usar nos dois.'],
+['void\\s+loop','loop()','void loop() {\n  // ordens aqui\n}','A rotina que se repete para sempre, milhares de vezes por segundo.',[['void','a função não devolve nenhum resultado'],['{ }','tudo o que estiver entre as chaves é repetido']],'Quando o loop chega à última linha, volta para a primeira, sem parar, até você desligar a placa.','Sem um delay ou outra espera, o loop roda tão rápido que você não percebe cada volta.'],
+['pinMode\\(','pinMode(pino, modo)','pinMode(8, OUTPUT);','Avisa se um pino vai enviar energia (acender algo) ou escutar (ler algo).',[['pino','o número do pino, como 8, ou A0 nos analógicos'],['OUTPUT','a placa envia sinal: LED, buzzer, motor'],['INPUT','a placa escuta: sensores'],['INPUT_PULLUP','escuta com um resistor interno, ideal para botões']],'Cada pino tem um circuito interno que pode funcionar como saída ou como entrada. O pinMode escolhe qual.','Esquecer o pinMode é a causa mais comum de LED que acende fraquinho ou não acende.'],
+['digitalWrite\\(','digitalWrite(pino, valor)','digitalWrite(8, HIGH);','Liga ou desliga um pino de saída.',[['pino','qual pino mexer'],['HIGH','liga: o pino fica com 5V'],['LOW','desliga: o pino fica com 0V']],'Por dentro, o pino é conectado ao 5V (HIGH) ou ao GND (LOW). O LED fica no meio do caminho: com HIGH a corrente passa por ele e com LOW não há diferença de energia, então ele apaga.','Só funciona se o pino foi configurado como OUTPUT no setup.'],
+['digitalRead\\(','digitalRead(pino)','int estado = digitalRead(2);','Pergunta se um pino está com sinal. A resposta é HIGH ou LOW.',[['pino','qual pino escutar'],['devolve','HIGH (sinal presente) ou LOW (sem sinal)']],'A placa mede a tensão no pino. Acima de uns 3 volts ela responde HIGH, abaixo disso responde LOW.','Com INPUT_PULLUP a lógica fica invertida: o botão solto dá HIGH e o apertado dá LOW. Por isso os códigos comparam com LOW para saber se apertou.'],
+['delay\\(','delay(tempo)','delay(1000);','Faz a placa esperar antes de ir para a próxima linha.',[['tempo','em milissegundos: 1000 é um segundo, 500 é meio segundo']],'A placa fica parada contando o tempo. Enquanto isso ela não lê botões nem sensores.','Delays muito longos deixam o projeto “surdo”. Por isso o botão do Pixel usa apenas 250.'],
+['analogRead\\(','analogRead(pino)','int valor = analogRead(A0);','Mede uma tensão e devolve um número de 0 a 1023.',[['pino','A0 a A5 (os pinos analógicos)'],['devolve','0 para 0 volt, 1023 para 5 volts']],'Um conversor interno divide os 5V em 1024 degraus. Cada degrau vale cerca de 0,005 volt. Meio caminho (2,5V) dá mais ou menos 512.','Funciona só nos pinos A0 a A5. Em um pino digital, não dá certo.'],
+['analogWrite\\(','analogWrite(pino, valor)','analogWrite(9, 128);','Dá “meia força” a um pino, de 0 (apagado) a 255 (máximo).',[['pino','precisa ter o símbolo ~ na placa'],['valor','0 a 255. O 128 é aproximadamente metade']],'A placa liga e desliga o pino cerca de 490 vezes por segundo. Com 128, fica ligado metade do tempo, e o olho enxerga brilho médio. Esse truque se chama PWM.','Só funciona nos pinos 3, 5, 6, 9, 10 e 11.'],
+['\\bmap\\(','map(valor, deMin, deMax, paraMin, paraMax)','int brilho = map(leitura, 0, 1023, 0, 255);','Converte um número de uma escala para outra, como trocar metros por centímetros.',[['valor','o número que você quer converter'],['deMin, deMax','a escala de onde ele vem'],['paraMin, paraMax','a escala para onde ele vai']],'É uma regra de três: o número mantém a mesma posição proporcional na escala nova. 512 de 1023 vira cerca de 128 de 255.','Só trabalha com números inteiros e não limita valores fora da faixa.'],
+['\\btone\\(','tone(pino, frequência, duração)','tone(8, 440, 200);','Toca uma nota no buzzer.',[['pino','onde o buzzer está ligado'],['frequência','em Hz. 440 é a nota Lá; números maiores soam mais agudos'],['duração','opcional, em milissegundos. Sem ela, toca até o noTone']],'A placa liga e desliga o pino na frequência pedida, e o buzzer vibra nesse ritmo. Esse tremor é o som.','Enquanto o tone está ativo, o PWM dos pinos 3 e 11 deixa de funcionar.'],
+['noTone\\(','noTone(pino)','noTone(8);','Silencia o buzzer.',[['pino','o mesmo pino usado no tone']],'Interrompe a vibração e o buzzer volta ao silêncio.','Se o buzzer não parar, falta chamar o noTone no caso em que nada está acontecendo.'],
+['Serial\\.begin','Serial.begin(velocidade)','Serial.begin(9600);','Abre a conversa entre a placa e o computador pelo cabo USB.',[['velocidade','9600 é o padrão dos nossos projetos']],'Cria um canal de texto pelo cabo. O Monitor Serial do Arduino IDE é a janela que mostra o que a placa escreve.','A velocidade precisa ser a mesma nos dois lados. Se aparecer símbolos estranhos, confira o canto da janela do Monitor Serial.'],
+['Serial\\.print','Serial.println(valor)','Serial.println(luz);','Escreve um valor na tela do computador.',[['valor','número, variável ou texto entre aspas'],['print','escreve e continua na mesma linha'],['println','escreve e pula para a linha de baixo']],'Transforma o valor em texto, manda pelo USB e o Monitor Serial exibe.','Escrever demais deixa o programa lento. Use só enquanto estiver testando.'],
+['\\brandom\\(','random(min, max)','int sorteio = random(1, 7);','Sorteia um número.',[['min','menor número possível'],['max','não entra no sorteio: random(1, 7) sorteia de 1 a 6']],'O Arduino usa uma fórmula que gera uma sequência que parece aleatória. Sem ajuda, a sequência é sempre a mesma.','Esquecer que o número máximo não entra é o erro mais comum.'],
+['randomSeed\\(','randomSeed(semente)','randomSeed(analogRead(A0));','Muda o ponto de partida do sorteio para ele não repetir sempre os mesmos números.',[['semente','qualquer número. Aqui usamos uma leitura do A0']],'Um pino analógico sem nada ligado capta ruído elétrico do ambiente, e esse valor muda a cada vez. Isso embaralha a sequência.','Chame uma vez só, no setup.'],
+['bitRead\\(','bitRead(número, posição)','bitRead(5, 0);','Olha um “ligado ou desligado” dentro de um número escrito em binário.',[['número','o número a examinar'],['posição','0 é a casa da direita, 1 a seguinte, e assim por diante']],'O 5 em binário é 0101. bitRead(5,0) dá 1, bitRead(5,1) dá 0, bitRead(5,2) dá 1 e bitRead(5,3) dá 0. Esses 1 e 0 viram HIGH e LOW nos quatro pinos do chip 4511.','A contagem de posições começa em 0, não em 1.'],
+['pulseIn\\(','pulseIn(pino, nível, limite)','long t = pulseIn(echo, HIGH, 30000);','Mede quanto tempo um pino fica ligado.',[['pino','onde escutar'],['nível','HIGH: mede o tempo em que fica ligado'],['limite','tempo máximo de espera, em microssegundos']],'Ela espera o pino ligar, cronômetra até desligar e devolve o tempo. No sensor de ré, é o tempo de ida e volta do som.','Se nada voltar dentro do limite, devolve 0. Trate esse caso, como o código faz.'],
+['delayMicroseconds\\(','delayMicroseconds(tempo)','delayMicroseconds(10);','Espera por um tempo bem curtinho.',[['tempo','em microssegundos: 1000 deles fazem um milissegundo']],'Igual ao delay, só que em escala bem menor. O sensor ultrassônico precisa de pulsos muito rápidos.','Acima de uns 16000 perde a precisão. Para tempos maiores, use delay.'],
+['\\.attach\\(','servo.attach(pino)','servoGarra.attach(9);','Avisa em qual pino o servo motor está ligado.',[['servoGarra','o nome que demos ao servo lá no começo'],['pino','onde o fio de sinal (laranja) está ligado']],'A biblioteca Servo passa a mandar, naquele pino, os pulsos que dizem ao motor para que ângulo ir.','Chame no setup, uma vez só.'],
+['\\.write\\(','servo.write(ângulo)','servoGarra.write(90);','Manda o servo girar até um ângulo.',[['ângulo','de 0 a 180 graus. 90 é o meio']],'O servo tem um circuito que compara o ângulo pedido com o atual e gira até igualar. Depois ele segura a posição, fazendo força.','Pedir um ângulo que a garra não alcança faz o motor zumbir e esquentar.'],
+['for\\s*\\(','for (início; condição; passo)','for (int i = 0; i < 4; i++) {\n  // repete 4 vezes\n}','Repete um bloco um número certo de vezes.',[['int i = 0','ponto de partida: i começa valendo 0'],['i < 4','continua repetindo enquanto isto for verdade'],['i++','ao final de cada volta, soma 1 ao i']],'Voltas: i=0, i=1, i=2, i=3. Quando i chega a 4, a condição fica falsa e o programa sai do for. São 4 voltas, que é o tamanho da lista dos botões.','Use i dentro das chaves para pegar cada item da lista, como botoes[i].'],
+['if\\s*\\(','if (condição) { } else { }','if (luz < limite) {\n  // acende o alarme\n} else {\n  // apaga o alarme\n}','Toma uma decisão: se for verdade faz uma coisa, senão faz outra.',[['condição','uma pergunta de sim ou não'],['{ } depois do if','o que fazer se a resposta for sim'],['else { }','o que fazer se for não (opcional)']],'Comparações: == igual, != diferente, < menor, > maior. E também: && (e), || (ou), ! (não). Em else if você encadeia mais de uma pergunta.','Para comparar usa-se dois sinais de igual (==). Um só (=) guarda um valor, não compara.'],
+['#include','#include <biblioteca.h>','#include <Servo.h>','Traz para o seu programa um pacote de código já pronto.',[['Servo.h','a biblioteca que sabe controlar servos']],'Antes de compilar, o Arduino IDE copia o conteúdo da biblioteca para dentro do seu programa. Assim você usa comandos como attach e write.','Vai sempre na primeira linha do arquivo.']
+];
+function fnCard(f){
+  var a=f[4].map(function(x){return '<li><b>'+esc(x[0])+'</b><span>'+x[1]+'</span></li>'}).join('');
+  return '<details class="fnc"><summary><span class="nm">'+esc(f[1])+'</span><span class="pl">'+f[3]+'</span></summary><div class="bd"><div><span class="lb">Como se escreve</span><pre class="code">'+hl(f[2])+'</pre></div><div><span class="lb">O que vai dentro</span><ul class="ar">'+a+'</ul></div><div><span class="lb">Por baixo dos panos</span><p>'+f[5]+'</p></div><div class="note dica" style="margin:0"><b>Cuidado</b><p>'+f[6]+'</p></div></div></details>';
+}
+function fnCards(p){
+  var code=p.blocos.map(function(b){return b.code}).join('\n');
+  var list=FN.filter(function(f,i){return i>1&&new RegExp(f[0]).test(code)});
+  if(!list.length) return '';
+  return '<h3>Os comandos deste projeto, por dentro</h3><p>Toque em cada comando para ver como se escreve, o que cada pedaço significa e o que a placa faz de verdade.</p><div class="fnl">'+list.map(fnCard).join('')+'</div>';
+}
+
+/* ---------- vista da protoboard com as peças encaixadas ---------- */
+function bb(sp){
+  var n=sp.cols||2,x0=40,dx=360/(n-1),oy=sp.oy||0;
+  var X=function(c){return x0+(c-1)*dx};
+  var RX=function(c){return X(c)+dx/2};
+  var Y={a:118,b:134,c:150,d:166,e:182,f:214,g:230,h:246,i:262,j:278};
+  var RY={'+':70,'-':86,'+b':300,'-b':316};
+  Object.keys(Y).forEach(function(k){Y[k]+=oy});Object.keys(RY).forEach(function(k){RY[k]+=oy});
+  var pins=sp.pins,pxs={};
+  var pa=sp.px?sp.px[0]:x0,pw=sp.px?sp.px[1]-sp.px[0]:360;
+  pins.forEach(function(p,i){pxs[p]=pins.length>1?pa+i*(pw/(pins.length-1)):220});
+  function T(t){
+    if(typeof t==='string') return [pxs[t],24];
+    if(t.x!==undefined) return [t.x,t.y];
+    if(RY[t[0]]!==undefined) return [RX(t[1]),RY[t[0]]];
+    return [X(t[0]),Y[t[1]]];
+  }
+  var s='<svg viewBox="0 0 440 '+(sp.noboard?(sp.h||116):334+oy)+'" role="img" aria-label="'+(sp.alt||'Peças na protoboard')+'">';
+  if(!sp.noboard) s+='<rect x="4" y="'+(58+oy)+'" width="432" height="272" rx="12" style="fill:var(--board);stroke:var(--line)"/>';
+  s+='<rect x="8" y="4" width="424" height="28" rx="8" style="fill:var(--pcb)"/>';
+  pins.forEach(function(p){
+    s+='<text x="'+pxs[p]+'" y="15" text-anchor="middle" class="svt" style="fill:#fff;font-size:9.5px">'+p.replace('*','')+'</text><circle cx="'+pxs[p]+'" cy="24" r="4" fill="#fff"/>';
+  });
+  if(!sp.noboard) Object.keys(RY).forEach(function(k){
+    var pos=k[0]==='+';
+    s+='<text x="16" y="'+(RY[k]+4)+'" text-anchor="middle" class="svb" style="fill:var('+(pos?'--w-5v':'--w-gnd')+')">'+(pos?'+':'−')+'</text>';
+    for(var c=1;c<=n;c++) s+='<circle cx="'+RX(c)+'" cy="'+RY[k]+'" r="3" style="fill:var(--hole)"/>';
+  });
+  for(var c=1;c<=n&&!sp.noboard;c++){
+    s+='<text x="'+X(c)+'" y="'+(99+oy)+'" text-anchor="middle" class="svm">'+c+'</text>';
+    Object.keys(Y).forEach(function(r){s+='<circle cx="'+X(c)+'" cy="'+Y[r]+'" r="3" style="fill:var(--hole)"/>'});
+  }
+  if(!sp.noboard) Object.keys(Y).forEach(function(r){s+='<text x="20" y="'+(Y[r]+3.5)+'" text-anchor="middle" class="svm">'+r+'</text>'});
+
+  var wires=(sp.wires||[]).slice();
+  function pol(l,sh){
+    return '<text x="'+l[0]+'" y="'+(l[1]+14)+'" text-anchor="middle" class="svb" style="fill:var(--w-5v);font-size:11px">+</text><text x="'+sh[0]+'" y="'+(sh[1]+14)+'" text-anchor="middle" class="svb" style="fill:var(--w-gnd);font-size:11px">−</text>';
+  }
+  sp.parts.forEach(function(p){
+    if(p.t==='res'){
+      var a=T(p.a),b=T(p.b),cx=(a[0]+b[0])/2,cy=(a[1]+b[1])/2,ang=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;
+      var bands=p.k==='10k'?['#7A4A21','#111111','#F2822C','#C9A227']:['#F2822C','#111111','#7A4A21','#C9A227'];
+      s+='<line x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'" stroke="#9AA5A2" stroke-width="3" stroke-linecap="round"/>';
+      s+='<g transform="translate('+cx+','+cy+') rotate('+ang+')"><rect x="-16" y="-6" width="32" height="12" rx="6" fill="#D9B98A" stroke="#8A6D3B"/>'+bands.map(function(c,i){return '<rect x="'+(-10+i*6.5)+'" y="-6" width="3.2" height="12" fill="'+c+'"/>'}).join('')+'</g>';
+      s+='<text x="'+cx+'" y="'+(cy+23)+'" text-anchor="middle" class="svm">'+(p.k==='10k'?'10kΩ':'300Ω')+'</text>';
+    }else if(p.t==='led'){
+      var l=T(p.l),sh=T(p.s),cx2=(l[0]+sh[0])/2,cy2=l[1]-30;
+      s+='<line x1="'+l[0]+'" y1="'+l[1]+'" x2="'+l[0]+'" y2="'+(cy2+10)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/><line x1="'+sh[0]+'" y1="'+sh[1]+'" x2="'+sh[0]+'" y2="'+(cy2+10)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/>';
+      s+='<path d="M'+(cx2-13)+','+(cy2+9)+' V'+(cy2-1)+' A13 13 0 0 1 '+(cx2+13)+','+(cy2-1)+' V'+(cy2+9)+' Z" fill="'+p.k+'" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/>';
+      s+='<rect x="'+(cx2-15)+'" y="'+(cy2+9)+'" width="30" height="4" rx="2" fill="'+p.k+'" stroke="rgba(0,0,0,.35)"/><ellipse cx="'+(cx2-5)+'" cy="'+(cy2-4)+'" rx="3" ry="5" fill="#fff" opacity=".4"/>';
+      s+=pol(l,sh);
+    }else if(p.t==='btn'){
+      var x1=X(p.c),x2=X(p.c+2);
+      s+='<rect x="'+(x1-6)+'" y="'+(Y.e-5)+'" width="'+(x2-x1+12)+'" height="'+(Y.f-Y.e+10)+'" rx="5" fill="#26302E"/>';
+      s+='<circle cx="'+((x1+x2)/2)+'" cy="'+((Y.e+Y.f)/2)+'" r="10" fill="#C9D2CF" stroke="#8E9A96"/>';
+      [[x1,Y.e],[x2,Y.e],[x1,Y.f],[x2,Y.f]].forEach(function(q){s+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="3" fill="#9AA5A2"/>'});
+    }else if(p.t==='buzz'){
+      var bp=T(p.p),bn=T(p.n),bx=(bp[0]+bn[0])/2,by=bp[1]-26;
+      s+='<line x1="'+bp[0]+'" y1="'+bp[1]+'" x2="'+(bx-11)+'" y2="'+(by+13)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/><line x1="'+bn[0]+'" y1="'+bn[1]+'" x2="'+(bx+11)+'" y2="'+(by+13)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/>';
+      s+='<circle cx="'+bx+'" cy="'+by+'" r="17" fill="#1D2321" stroke="#3B4744" stroke-width="1.5"/><circle cx="'+bx+'" cy="'+by+'" r="4" fill="#3B4744"/><text x="'+(bx-9)+'" y="'+(by-6)+'" text-anchor="middle" style="font:700 11px sans-serif;fill:#fff">+</text>';
+      s+=pol(bp,bn);
+    }else if(p.t==='ldr'){
+      var la=T(p.a),lb=T(p.b),lx=(la[0]+lb[0])/2,ly=la[1]-22;
+      s+='<line x1="'+la[0]+'" y1="'+la[1]+'" x2="'+(lx-5)+'" y2="'+(ly+8)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/><line x1="'+lb[0]+'" y1="'+lb[1]+'" x2="'+(lx+5)+'" y2="'+(ly+8)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/>';
+      s+='<circle cx="'+lx+'" cy="'+ly+'" r="11" fill="#E7C98B" stroke="#8A6D3B" stroke-width="1.5"/><path d="M'+(lx-7)+','+(ly+3)+' l3.5,-6 l3.5,6 l3.5,-6 l3.5,6" fill="none" stroke="#7A4A21" stroke-width="1.6" stroke-linejoin="round"/>';
+      s+='<text x="'+lx+'" y="'+(ly-15)+'" text-anchor="middle" class="svm">LDR</text>';
+    }else if(p.t==='pot'){
+      var xs=p.c.map(function(c){return X(c)}),py=Y[p.r];
+      xs.forEach(function(x){s+='<line x1="'+x+'" y1="'+py+'" x2="'+x+'" y2="'+(py-8)+'" stroke="#9AA5A2" stroke-width="3" stroke-linecap="round"/>'});
+      s+='<rect x="'+(xs[0]-14)+'" y="'+(py-52)+'" width="'+(xs[2]-xs[0]+28)+'" height="46" rx="10" fill="#2D3B57" stroke="#1A2438"/>';
+      s+='<circle cx="'+xs[1]+'" cy="'+(py-29)+'" r="15" fill="#5B8DEF" stroke="#2E55A8" stroke-width="1.5"/><line x1="'+xs[1]+'" y1="'+(py-41)+'" x2="'+xs[1]+'" y2="'+(py-32)+'" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>';
+    }else if(p.t==='rgb'){
+      var xs3=p.c.map(function(c){return X(c)}),ye=Y.e;
+      xs3.forEach(function(x){s+='<line x1="'+x+'" y1="'+ye+'" x2="'+x+'" y2="'+(ye-22)+'" stroke="#9AA5A2" stroke-width="2.5" stroke-linecap="round"/>'});
+      s+='<rect x="'+(xs3[0]-15)+'" y="'+(ye-46)+'" width="'+(xs3[3]-xs3[0]+30)+'" height="26" rx="13" fill="#E9EEEC" stroke="#8E9A96" stroke-width="1.5"/>';
+      [['R','#E5484D'],['−','#1B2B28'],['G','#2EB67D'],['B','#2F7DE1']].forEach(function(q,i){
+        s+='<circle cx="'+xs3[i]+'" cy="'+(ye-33)+'" r="5" fill="'+q[1]+'"/>';
+        s+='<text x="'+xs3[i]+'" y="'+(ye+14)+'" text-anchor="middle" class="svb" style="font-size:11px;fill:'+q[1]+'">'+q[0]+'</text>';
+      });
+    }else if(p.t==='ic'||p.t==='seg'){
+      var nn=p.t==='ic'?8:5,xa=X(p.c),xb=X(p.c+nn-1),cxm=(xa+xb)/2;
+      s+='<rect x="'+(xa-12)+'" y="'+(Y.e-5)+'" width="'+(xb-xa+24)+'" height="'+(Y.f-Y.e+10)+'" rx="5" fill="#26302E"/>';
+      if(p.t==='ic'){
+        s+='<path d="M'+(xa-12)+','+(Y.e+11)+' a5,5 0 0 1 0,10" fill="none" stroke="#7E9A92" stroke-width="1.5"/>';
+        s+='<text x="'+cxm+'" y="'+((Y.e+Y.f)/2+3.5)+'" text-anchor="middle" style="font:600 10px monospace;fill:#fff">CD4511</text>';
+      }else{
+        s+='<text x="'+cxm+'" y="'+((Y.e+Y.f)/2+9)+'" text-anchor="middle" style="font:800 26px monospace;fill:#6FE0B4">8.</text>';
+      }
+      for(var q=0;q<nn;q++){
+        var qx=X(p.c+q);
+        s+='<circle cx="'+qx+'" cy="'+Y.e+'" r="3" fill="#9AA5A2"/><circle cx="'+qx+'" cy="'+Y.f+'" r="3" fill="#9AA5A2"/>';
+        s+='<text x="'+qx+'" y="'+(Y.e-10)+'" text-anchor="middle" class="svm" style="font-size:8.5px">'+p.top[q]+'</text>';
+        s+='<text x="'+qx+'" y="'+(Y.f+19)+'" text-anchor="middle" class="svm" style="font-size:8.5px">'+p.bot[q]+'</text>';
+      }
+      s+='<text x="'+cxm+'" y="'+(Y.e-22)+'" text-anchor="middle" class="svb" style="font-size:11px">'+p.name+'</text>';
+    }else if(p.t==='mod'){
+      var tx=p.terms.map(function(tm){return tm.x!==undefined?tm.x:pxs[tm.to]});
+      var mx0=Math.min.apply(null,tx)-18,mx1=Math.max.apply(null,tx)+18;
+      s+='<rect x="'+mx0+'" y="48" width="'+(mx1-mx0)+'" height="52" rx="8" fill="'+p.k+'"/>';
+      s+='<text x="'+((mx0+mx1)/2)+'" y="91" text-anchor="middle" class="svb" style="fill:#fff;font-size:11px">'+p.name+'</text>';
+      p.terms.forEach(function(tm,i){
+        s+='<circle cx="'+tx[i]+'" cy="48" r="4.5" fill="#fff"/><text x="'+tx[i]+'" y="66" text-anchor="middle" class="svt" style="fill:#fff;font-size:9.5px">'+tm.l+'</text>';
+        wires.push({f:{x:tx[i],y:48},to:tm.to});
+      });
+    }else if(p.t==='laser'){
+      s+='<rect x="348" y="36" width="80" height="18" rx="6" fill="#8A5A2B"/><text x="388" y="48.5" text-anchor="middle" style="font:600 10px sans-serif;fill:#fff">mini laser</text>';
+      s+='<circle cx="366" cy="54" r="3.5" style="fill:var(--w-5v)"/><circle cx="410" cy="54" r="3.5" style="fill:var(--w-gnd)"/>';
+      wires.push({f:{x:366,y:54},to:['+',p.cp]},{f:{x:410,y:54},to:['-',p.cm]});
+    }
+  });
+
+  var pal=['--w1','--w2','--w3','--w4','--w5','--w6'],k=0,cmap={};
+  wires.forEach(function(w){
+    var base=typeof w.f==='string'?w.f.replace('*',''):(typeof w.to==='string'?w.to.replace('*',''):null),tr=Array.isArray(w.to)?w.to[0]:null,c;
+    if(base==='GND'||tr==='-'||tr==='-b') c='--w-gnd';
+    else if(base==='5V'||tr==='+'||tr==='+b') c='--w-5v';
+    else{var key=base||JSON.stringify(w.f);cmap[key]=cmap[key]||pal[k++%6];c=cmap[key]}
+    var p1=T(w.f),p2=T(w.to),mid=(p1[1]+p2[1])/2,my=mid-(w.up||0);
+    s+='<path d="M'+p1[0]+','+p1[1]+' C'+p1[0]+','+my+' '+p2[0]+','+my+' '+p2[0]+','+p2[1]+'" fill="none" stroke="var('+c+')" stroke-width="3" stroke-linecap="round"/>';
+    if(w.r){
+      var gt=w.t||0.5,gu=1-gt,
+          gx=(gu*gu*gu+3*gu*gu*gt)*p1[0]+(3*gu*gt*gt+gt*gt*gt)*p2[0],
+          gy=gu*gu*gu*p1[1]+3*gu*gt*my+gt*gt*gt*p2[1],
+          ga=Math.atan2(3*gu*gu*(my-p1[1])+3*gt*gt*(p2[1]-my),6*gu*gt*(p2[0]-p1[0]))*180/Math.PI;
+      s+='<g transform="translate('+gx+','+gy+') rotate('+ga+')"><rect x="-14" y="-5.5" width="28" height="11" rx="5.5" fill="#D9B98A" stroke="#8A6D3B"/>'+['#F2822C','#111111','#7A4A21','#C9A227'].map(function(bc,i){return '<rect x="'+(-8+i*5.5)+'" y="-5.5" width="2.8" height="11" fill="'+bc+'"/>'}).join('')+'</g>';
+    }
+    if(typeof w.to!=='string') s+='<circle cx="'+p2[0]+'" cy="'+p2[1]+'" r="3.6" style="fill:var('+c+')"/>';
+    if(typeof w.f!=='string') s+='<circle cx="'+p1[0]+'" cy="'+p1[1]+'" r="3.6" style="fill:var('+c+')"/>';
+  });
+  return s+'</svg>';
+}
+function ledUnit(c,pin,color,k){
+  return {parts:[{t:'res',a:[c-3,'a'],b:[c,'a'],k:k||'300'},{t:'led',l:[c,'e'],s:[c+1,'e'],k:color}],
+          wires:[{f:pin,to:[c-3,'b']},{f:[c+1,'a'],to:['-',c+1]}]};
+}
+function bbJoin(base,units){
+  units.forEach(function(u){base.parts=base.parts.concat(u.parts);base.wires=base.wires.concat(u.wires)});
+  return base;
+}
+var LEG='<span><i style="background:var(--w-5v)"></i>vermelho: 5V</span><span><i style="background:var(--w-gnd)"></i>escuro: GND</span><span><i style="background:var(--w1)"></i>outras cores: pinos de sinal</span><span>+ e − sob as pernas mostram o sentido</span>';
+
+/* 0 semáforo */
+P[0].bb=bbJoin({cols:15,alt:'Semáforo montado na protoboard',pins:['D8','GND','D9','D10'],parts:[],wires:[{f:'GND',to:['-',2]}]},
+  [ledUnit(4,'D8','#E5484D'),ledUnit(9,'D9','#F5C518'),ledUnit(14,'D10','#2EB67D')]);
+P[0].bbCap='Cada LED tem o resistor ao lado esquerdo, e o fio do pino chega na ponta livre dele. A perna curta do LED sobe por um fio até o trilho −, que está ligado ao GND.';
+
+/* 1 piano */
+P[1].bb={cols:16,alt:'Piano montado na protoboard',pins:['D2','D3','D4','D5','D8','GND*','GND'],
+  parts:[{t:'btn',c:1},{t:'btn',c:4},{t:'btn',c:7},{t:'btn',c:10},{t:'buzz',p:[14,'e'],n:[16,'e']}],
+  wires:[{f:'D2',to:[1,'a']},{f:'D3',to:[4,'a']},{f:'D4',to:[7,'a']},{f:'D5',to:[10,'a']},{f:'D8',to:[14,'a']},
+         {f:[16,'a'],to:['-',16]},{f:'GND',to:['-',15]},{f:'GND*',to:['-b',13]},
+         {f:[1,'h'],to:['-b',1]},{f:[4,'h'],to:['-b',4]},{f:[7,'h'],to:['-b',7]},{f:[10,'h'],to:['-b',10]}]};
+P[1].bbCap='Cada botão atravessa o vão do meio: o lado de cima recebe o fio do pino e o lado de baixo vai ao trilho − de baixo. Um fio do GND desce reto até esse trilho de baixo, e outro liga o trilho − de cima ao buzzer.';
+
+/* 2 missão impossível */
+P[2].bb=bbJoin({cols:17,alt:'Missão Impossível montada na protoboard',px:[40,320],pins:['5V','A0','D9','GND','D8'],
+  parts:[{t:'ldr',a:[2,'e'],b:[4,'e']},{t:'res',a:[4,'a'],b:[7,'a'],k:'10k'},{t:'buzz',p:[14,'e'],n:[16,'e']},{t:'laser',cp:15,cm:17}],
+  wires:[{f:'5V',to:['+',1]},{f:'GND',to:['-',10]},{f:'A0',to:[4,'b']},{f:[2,'a'],to:['+',2]},{f:[7,'b'],to:['-',7]},{f:'D8',to:[14,'a']},{f:[16,'a'],to:['-',16]}]},
+  [ledUnit(11,'D9','#E5484D')]);
+P[2].bbCap='A LDR e o resistor de 10kΩ se encontram na coluna 4. É dali que sai o fio para o A0, o ponto que mede a luz. O laser fica fora da protoboard e só usa os trilhos + e −.';
+
+/* 3 dimmer */
+P[3].bb=bbJoin({cols:12,alt:'Dimmer LED montado na protoboard',pins:['5V','GND','A0','D9'],
+  parts:[{t:'pot',c:[2,3,4],r:'e'}],
+  wires:[{f:'5V',to:['+',1]},{f:'GND',to:['-',1]},{f:[2,'a'],to:['+',2]},{f:'A0',to:[3,'a']},{f:[4,'a'],to:['-',4]}]},
+  [ledUnit(9,'D9','#F5F7F6')]);
+P[3].bbCap='O potenciômetro tem três pernas na mesma linha: a da esquerda vai ao 5V, a do meio ao A0 e a da direita ao GND. Os fios entram na fileira de cima, que fica livre acima do corpo da peça.';
+
+/* 4 pixel */
+P[4].bb={cols:17,alt:'Pixel montado na protoboard',pins:['D2','D9','D10','D11','A0','5V','GND','GND*'],
+  parts:[{t:'btn',c:1},{t:'rgb',c:[8,9,10,11]},
+    {t:'res',a:[4,'a'],b:[8,'a'],k:'300'},{t:'res',a:[10,'a'],b:[14,'a'],k:'300'},{t:'res',a:[11,'b'],b:[15,'b'],k:'300'},
+    {t:'pot',c:[13,14,15],r:'j'}],
+  wires:[{f:'GND',to:['-',2]},{f:'GND*',to:['-b',3]},
+    {f:'D2',to:[1,'a']},{f:[1,'h'],to:['-b',1]},
+    {f:'D9',to:[4,'b']},{f:'D10',to:[14,'c']},{f:'D11',to:[15,'c']},
+    {f:[9,'a'],to:['-',9]},
+    {f:'5V',to:[13,'f']},{f:'A0',to:[14,'f']},{f:'GND',to:[15,'f']}]};
+P[4].bbCap='O LED RGB fica com as quatro pernas em colunas vizinhas. A perna do meio-esquerda (a mais longa) vai ao GND. Cada uma das outras três recebe um resistor de 300Ω e, na ponta livre do resistor, o fio de um pino. O potenciômetro fica na metade de baixo, com os fios na fileira de cima dele.';
+
+/* 5 dado */
+P[5].bb={cols:20,alt:'Dado eletrônico montado na protoboard',pins:['D2','D3','D4','D5','D6','GND','5V','GND*','5V*'],
+  parts:[{t:'ic',c:2,name:'CI 4511',top:['16','15','14','13','12','11','10','9'],bot:['1','2','3','4','5','6','7','8']},
+    {t:'seg',c:12,name:'Display',top:['g','f','com','a','b'],bot:['e','d','com','c','pt']},{t:'btn',c:18}],
+  wires:[{f:'5V',to:['+',1]},{f:'GND',to:['-',1]},{f:'5V*',to:['+b',1]},{f:'GND*',to:['-b',2]},
+    {f:[2,'a'],to:['+',2]},{f:[4,'j'],to:['+b',4]},{f:[5,'j'],to:['+b',5]},{f:[6,'j'],to:['-b',6]},{f:[9,'j'],to:['-b',9]},
+    {f:'D2',to:[8,'j']},{f:'D3',to:[2,'j']},{f:'D4',to:[3,'j']},{f:'D5',to:[7,'j']},
+    {f:[14,'a'],to:['-',14]},
+    {f:[5,'a'],to:[15,'a'],up:12,r:1},{f:[6,'a'],to:[16,'a'],up:30,r:1},{f:[4,'a'],to:[12,'a'],up:20,r:1},{f:[3,'a'],to:[13,'a'],up:44,r:1},
+    {f:[9,'a'],to:[12,'j'],r:1,t:0.85},{f:[8,'a'],to:[13,'j'],r:1,t:0.85},{f:[7,'a'],to:[15,'j'],r:1,t:0.85},
+    {f:'D6',to:[18,'a']},{f:[18,'h'],to:['-b',18]}]};
+P[5].bbCap='O chip e o display atravessam o vão do meio, com o entalhe do chip virado para a esquerda. Os fios vermelhos e pretos levam energia aos pinos do chip e aos trilhos. Cada fio colorido com um resistor no meio leva um segmento (a até g) do chip ao display. Os números pequenos são os números dos pinos de cada peça.';
+
+/* 6 sensor de ré */
+P[6].bb=bbJoin({cols:20,oy:64,alt:'Sensor de Ré montado na protoboard',pins:['5V','D9','D10','GND','D5','D6','D7','D8'],
+  parts:[{t:'mod',name:'Sensor ultrassônico',k:'#2F6FA8',terms:[{l:'VCC',to:'5V'},{l:'Trig',to:'D9'},{l:'Echo',to:'D10'},{l:'GND',to:'GND'}]},
+    {t:'buzz',p:[17,'e'],n:[19,'e']}],
+  wires:[{f:'GND',to:['-',2]},{f:'D8',to:[17,'a']},{f:[19,'a'],to:['-',19]}]},
+  [ledUnit(4,'D5','#2EB67D'),ledUnit(9,'D6','#F5C518'),ledUnit(14,'D7','#E5484D')]);
+P[6].bbCap='O sensor fica fora da protoboard e usa quatro fios macho-fêmea direto nos pinos da placa. Na protoboard ficam os três LEDs (cada um com o seu resistor) e o buzzer. Todas as pernas curtas voltam ao trilho −, que está ligado ao GND.';
+
+/* 7 garra */
+P[7].bb={noboard:true,h:112,alt:'Garra robótica: joystick e servo ligados à placa',pins:['GND','5V','A0','D2','GND*','5V*','D9'],
+  parts:[{t:'mod',name:'Módulo joystick',k:'#2B3340',terms:[{l:'GND',to:'GND'},{l:'+5V',to:'5V'},{l:'VRx',to:'A0'},{l:'SW',to:'D2'}]},
+    {t:'mod',name:'Micro servo',k:'#2F6FA8',terms:[{l:'marrom',to:'GND*'},{l:'verm.',to:'5V*'},{l:'laranja',to:'D9'}]}],wires:[]};
+P[7].bbCap='Aqui não precisa de protoboard: cada módulo liga direto nos pinos da placa com os jumpers. O joystick usa quatro fios e o servo três. A cor do fio do servo (marrom, vermelho e laranja) é a mesma que está no conector dele.';
+
 var html='';
 P.forEach(function(p,idx){
   var dots='●'.repeat(p.nivel)+'○'.repeat(3-p.nivel);
@@ -747,22 +1009,24 @@ P.forEach(function(p,idx){
   html+='<h3>Peças</h3><ul class="pecas">'+p.pecas.map(function(x){return '<li><span class="q">'+x[0]+'</span><span>'+x[1]+'</span></li>'}).join('')+'</ul>';
   if(p.avisoExtra) html+=p.avisoExtra;
   html+='<h3>Monte passo a passo</h3>'+steps(p.id,p.passos);
-  html+='<h3>Esquema de ligação</h3><figure><div class="fig">'+wiring(p.fio)+'</div><div class="legend"><span><i style="background:var(--w-5v)"></i>vermelho: 5V</span><span><i style="background:var(--w-gnd)"></i>escuro: GND</span><span><i style="background:var(--w1)"></i>outras cores: sinais</span></div><figcaption>As caixas à direita são as peças e as bolinhas são os terminais. Cada linha mostra de qual pino da placa sai o fio. Quando há um resistor no caminho, o valor aparece sobre a linha.</figcaption></figure>';
+  if(p.bb) html+='<h3>Veja na protoboard</h3><figure><div class="fig">'+bb(p.bb)+'</div><div class="legend">'+LEG+'</div><figcaption>'+p.bbCap+'</figcaption></figure>';
+  html+='<h3>'+(p.bb?'Esquema simplificado: quem liga em quem':'Esquema de ligação')+'</h3><figure><div class="fig">'+wiring(p.fio)+'</div><div class="legend"><span><i style="background:var(--w-5v)"></i>vermelho: 5V</span><span><i style="background:var(--w-gnd)"></i>escuro: GND</span><span><i style="background:var(--w1)"></i>outras cores: sinais</span></div><figcaption>É o mesmo circuito do desenho da protoboard, só que em forma de diagrama. As caixas à direita são as peças e as bolinhas são os terminais. Cada linha mostra de qual pino da placa sai o fio. Quando há um resistor no caminho, o valor aparece sobre a linha.</figcaption></figure>';
   if(p.extra) html+=p.extra();
-  html+='<h3>Código, pedacinho por pedacinho</h3>'+chunks(p.blocos)+fullCode(p.blocos);
+  html+='<h3>Código, pedacinho por pedacinho</h3>'+chunks(p.blocos)+fullCode(p.blocos)+fnCards(p);
   if(p.calibra) html+=p.calibra;
   html+='<div class="note certo"><b>Deu certo se</b><p>'+p.teste+'</p></div>';
   html+='<h3>Se algo der errado</h3><div class="err">'+p.erros.map(function(e){return '<details><summary>'+e[0]+'</summary><p>'+e[1]+'</p></details>'}).join('')+'</div>';
   html+='<div class="desafio"><b>Desafio</b><p>'+p.desafio+'</p></div></section>';
 });
 document.getElementById('projetos').innerHTML=html;
+document.getElementById('fndic').innerHTML=FN.map(fnCard).join('');
 var f2=document.getElementById('fio2'); if(f2) f2.innerHTML=wiring(P[5].fio2);
 
 /* ---------- figuras genéricas ---------- */
 document.querySelectorAll('[data-fig]').forEach(function(el){var f=FIGS[el.dataset.fig];if(f) el.innerHTML=f()});
 
 /* ---------- capa e navegação ---------- */
-var idx='',nav='<a href="#kit">Kit</a><a href="#conceitos">Ideias</a><a href="#instalar">Instalar</a><a href="#comandos">Comandos</a>';
+var idx='',nav='<a href="#kit">Kit</a><a href="#conceitos">Ideias</a><a href="#instalar">Instalar</a><a href="#comandos">Comandos</a><a href="#funcoes">Dicionário</a>';
 P.forEach(function(p,i){
   idx+='<a href="#'+p.id+'"><span class="n">'+(i+1)+'</span><span class="t">'+p.nome+'</span><span class="d">'+'●'.repeat(p.nivel)+'○'.repeat(3-p.nivel)+' · '+p.tempo+'</span></a>';
   nav+='<a href="#'+p.id+'">'+(i+1)+'. '+p.nome+'</a>';
